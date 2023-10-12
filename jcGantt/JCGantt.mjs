@@ -1,31 +1,31 @@
-var de = Object.defineProperty;
-var Mt = Object.getOwnPropertySymbols;
-var ue = Object.prototype.hasOwnProperty, pe = Object.prototype.propertyIsEnumerable;
-var Ct = (n, t, e) => t in n ? de(n, t, { enumerable: !0, configurable: !0, writable: !0, value: e }) : n[t] = e, d = (n, t) => {
+var K = Object.defineProperty;
+var P = Object.getOwnPropertySymbols;
+var N = Object.prototype.hasOwnProperty, J = Object.prototype.propertyIsEnumerable;
+var B = (n, t, e) => t in n ? K(n, t, { enumerable: !0, configurable: !0, writable: !0, value: e }) : n[t] = e, d = (n, t) => {
   for (var e in t || (t = {}))
-    ue.call(t, e) && Ct(n, e, t[e]);
-  if (Mt)
-    for (var e of Mt(t))
-      pe.call(t, e) && Ct(n, e, t[e]);
+    N.call(t, e) && B(n, e, t[e]);
+  if (P)
+    for (var e of P(t))
+      J.call(t, e) && B(n, e, t[e]);
   return n;
 };
-var zt = (n, t, e) => new Promise((i, s) => {
-  var r = (h) => {
+var H = (n, t, e) => new Promise((i, s) => {
+  var o = (h) => {
     try {
-      a(e.next(h));
-    } catch (l) {
-      s(l);
+      l(e.next(h));
+    } catch (c) {
+      s(c);
     }
-  }, o = (h) => {
+  }, a = (h) => {
     try {
-      a(e.throw(h));
-    } catch (l) {
-      s(l);
+      l(e.throw(h));
+    } catch (c) {
+      s(c);
     }
-  }, a = (h) => h.done ? i(h.value) : Promise.resolve(h.value).then(r, o);
-  a((e = e.apply(n, t)).next());
+  }, l = (h) => h.done ? i(h.value) : Promise.resolve(h.value).then(o, a);
+  l((e = e.apply(n, t)).next());
 });
-var ge = Xt([
+var BUILTIN_OBJECT = reduce([
   "Function",
   "RegExp",
   "Date",
@@ -36,7 +36,7 @@ var ge = Xt([
   "Canvas"
 ], function(n, t) {
   return n["[object " + t + "]"] = !0, n;
-}, {}), fe = Xt([
+}, {}), TYPED_ARRAY = reduce([
   "Int8",
   "Uint8",
   "Uint8Clamped",
@@ -48,74 +48,74 @@ var ge = Xt([
   "Float64"
 ], function(n, t) {
   return n["[object " + t + "Array]"] = !0, n;
-}, {}), Gt = Object.prototype.toString, me = Array.prototype, ye = me.slice, Dt = function() {
-}.constructor, F = Dt ? Dt.prototype : null, we = "__proto__";
-function S(n) {
+}, {}), objToString = Object.prototype.toString, arrayProto = Array.prototype, nativeSlice = arrayProto.slice, ctorFunction = function() {
+}.constructor, protoFunction = ctorFunction ? ctorFunction.prototype : null, protoKey = "__proto__";
+function clone(n) {
   if (n == null || typeof n != "object")
     return n;
-  var t = n, e = Gt.call(n);
+  var t = n, e = objToString.call(n);
   if (e === "[object Array]") {
-    if (!et(n)) {
+    if (!isPrimitive(n)) {
       t = [];
       for (var i = 0, s = n.length; i < s; i++)
-        t[i] = S(n[i]);
+        t[i] = clone(n[i]);
     }
-  } else if (fe[e]) {
-    if (!et(n)) {
-      var r = n.constructor;
-      if (r.from)
-        t = r.from(n);
+  } else if (TYPED_ARRAY[e]) {
+    if (!isPrimitive(n)) {
+      var o = n.constructor;
+      if (o.from)
+        t = o.from(n);
       else {
-        t = new r(n.length);
+        t = new o(n.length);
         for (var i = 0, s = n.length; i < s; i++)
           t[i] = n[i];
       }
     }
-  } else if (!ge[e] && !et(n) && !Se(n)) {
+  } else if (!BUILTIN_OBJECT[e] && !isPrimitive(n) && !isDom(n)) {
     t = {};
-    for (var o in n)
-      n.hasOwnProperty(o) && o !== we && (t[o] = S(n[o]));
+    for (var a in n)
+      n.hasOwnProperty(a) && a !== protoKey && (t[a] = clone(n[a]));
   }
   return t;
 }
-function Xt(n, t, e, i) {
+function reduce(n, t, e, i) {
   if (n && t) {
-    for (var s = 0, r = n.length; s < r; s++)
+    for (var s = 0, o = n.length; s < o; s++)
       e = t.call(i, e, n[s], s, n);
     return e;
   }
 }
-function ve(n, t) {
+function bindPolyfill(n, t) {
   for (var e = [], i = 2; i < arguments.length; i++)
     e[i - 2] = arguments[i];
   return function() {
-    return n.apply(t, e.concat(ye.call(arguments)));
+    return n.apply(t, e.concat(nativeSlice.call(arguments)));
   };
 }
-F && w(F.bind) && F.call.bind(F.bind);
-function ke(n) {
-  return Array.isArray ? Array.isArray(n) : Gt.call(n) === "[object Array]";
+protoFunction && isFunction(protoFunction.bind) && protoFunction.call.bind(protoFunction.bind);
+function isArray(n) {
+  return Array.isArray ? Array.isArray(n) : objToString.call(n) === "[object Array]";
 }
-function w(n) {
+function isFunction(n) {
   return typeof n == "function";
 }
-function E(n) {
+function isString(n) {
   return typeof n == "string";
 }
-function be(n) {
+function isObject(n) {
   var t = typeof n;
   return t === "function" || !!n && t === "object";
 }
-function Se(n) {
+function isDom(n) {
   return typeof n == "object" && typeof n.nodeType == "number" && typeof n.ownerDocument == "object";
 }
-var Te = "__ec_primitive__";
-function et(n) {
-  return n[Te];
+var primitiveKey = "__ec_primitive__";
+function isPrimitive(n) {
+  return n[primitiveKey];
 }
-class G {
+class Model {
   constructor(t, e) {
-    this.originOption = S(t), this.fullOption = e;
+    this.originOption = clone(t), this.fullOption = e;
   }
 }
 moment.suppressDeprecationWarnings = !0;
@@ -124,10 +124,10 @@ moment.locale("zh-cn", {
     dow: 1
   }
 });
-const rt = {
+const constant = {
   cellWidth: 75,
   cellHeight: 35
-}, u = moment, Ot = {
+}, _global_moment = moment, colors = {
   info: "#909399",
   error: "#F56C6C",
   warn: "#E6A23C",
@@ -135,12 +135,12 @@ const rt = {
   冰川蓝: "#84A3BC",
   蜜橙: "#FFBE90",
   珊瑚粉: "#E2A9A1"
-}, bt = class ot {
+}, _TimeScaleOption = class z {
   constructor(t) {
-    if (this.start = /* @__PURE__ */ new Date(), this.days = ot.defaultDays, this.accuracy = "second", this.baseWidth = rt.cellWidth, this.scales = [new Rt()], t) {
+    if (this.start = /* @__PURE__ */ new Date(), this.days = z.defaultDays, this.accuracy = "second", this.baseWidth = constant.cellWidth, this.scales = [new ScaleOption()], t) {
       let e = [];
       t.scales && t.scales.forEach((i) => {
-        e.push(new Rt(i));
+        e.push(new ScaleOption(i));
       });
       for (let i in t)
         this[i] = t[i];
@@ -148,28 +148,28 @@ const rt = {
     }
   }
   getAccuracy() {
-    return ot.accuracyMap.get(this.accuracy);
+    return z.accuracyMap.get(this.accuracy);
   }
 };
-bt.defaultDays = -60;
-bt.accuracyMap = (/* @__PURE__ */ new Map()).set("second", 1).set("minute", 60).set("hour", 60 * 60).set("day", 60 * 60 * 24).set("week", 60 * 60 * 24 * 7).set("month", 30 * 60 * 60 * 24 * 7).set("year", 365 * 30 * 60 * 60 * 24 * 7);
-let it = bt;
-class Rt {
+_TimeScaleOption.defaultDays = -60;
+_TimeScaleOption.accuracyMap = (/* @__PURE__ */ new Map()).set("second", 1).set("minute", 60).set("hour", 60 * 60).set("day", 60 * 60 * 24).set("week", 60 * 60 * 24 * 7).set("month", 30 * 60 * 60 * 24 * 7).set("year", 365 * 30 * 60 * 60 * 24 * 7);
+let TimeScaleOption = _TimeScaleOption;
+class ScaleOption {
   constructor(t) {
     if (this.symbol = "day", this.formatter = "YY/MM/DD", t)
       for (let e in t)
         this[e] = t[e];
   }
 }
-function Et(n, t, e) {
-  if (E(n))
-    return u(t).format(n);
-  if (w(n))
+function dateFormatHandle(n, t, e) {
+  if (isString(n))
+    return _global_moment(t).format(n);
+  if (isFunction(n))
     return n(t, e);
 }
-const Ft = class Wt extends G {
+const _TimeScaleModel = class F extends Model {
   constructor(t) {
-    super(t, new it(t)), this.type = Wt.type, this.timeBase = 1, this._timeBase = 1, this.option = S(t);
+    super(t, new TimeScaleOption(t)), this.type = F.type, this.timeBase = 1, this._timeBase = 1, this.option = clone(t);
   }
   refresh() {
     this.init();
@@ -181,13 +181,13 @@ const Ft = class Wt extends G {
   initMetaDataMap(t, e) {
     let i = this;
     this.metaDataMap = /* @__PURE__ */ new Map();
-    let s = this.fullOption.scales, r = this.getMinAccuracyScale(s);
-    this.originMinUnit = r ? r.symbol : "day";
-    let o = this.unitConversion(this._timeBase, this._timeUnit || this.originMinUnit);
-    this.timeBase = Math.floor(o.timeBase), this.minUnit = o.timeUnit;
-    let a = o.formatter;
+    let s = this.fullOption.scales, o = this.getMinAccuracyScale(s);
+    this.originMinUnit = o ? o.symbol : "day";
+    let a = this.unitConversion(this._timeBase, this._timeUnit || this.originMinUnit);
+    this.timeBase = Math.floor(a.timeBase), this.minUnit = a.timeUnit;
+    let l = a.formatter;
     s.forEach((h) => {
-      i.metaDataMap.get(h.symbol) || (h.symbol == i.originMinUnit ? i.metaDataMap.set(h.symbol, i.createMinTimeMetaData(h, this.timeBase, i.minUnit, a, t, e)) : i.metaDataMap.set(h.symbol, i.createTimeMetaData(h, this.timeBase, i.minUnit, t, e)));
+      i.metaDataMap.get(h.symbol) || (h.symbol == i.originMinUnit ? i.metaDataMap.set(h.symbol, i.createMinTimeMetaData(h, this.timeBase, i.minUnit, l, t, e)) : i.metaDataMap.set(h.symbol, i.createTimeMetaData(h, this.timeBase, i.minUnit, t, e)));
     });
   }
   initMetaDataList() {
@@ -197,50 +197,50 @@ const Ft = class Wt extends G {
     });
   }
   getMinAccuracyScale(t) {
-    return t && t.length > 0 ? t.reduce((e, i) => it.accuracyMap.get(e.symbol) - it.accuracyMap.get(i.symbol) <= 0 ? e : i) : null;
+    return t && t.length > 0 ? t.reduce((e, i) => TimeScaleOption.accuracyMap.get(e.symbol) - TimeScaleOption.accuracyMap.get(i.symbol) <= 0 ? e : i) : null;
   }
   getStartAndEnd() {
     let t = this.fullOption.start, e = this.fullOption.end, i = this.fullOption.days;
-    return e ? (e = u(e).toDate(), i > 0 ? t = u(e).subtract(Math.abs(i), "d").toDate() : t = u(t).toDate()) : (t = u(t).toDate(), e = u(t).add(Math.abs(i), "d").toDate()), t = u(t).startOf("d").toDate(), e = u(e).startOf("d").toDate(), { start: t, end: e };
+    return e ? (e = _global_moment(e).toDate(), i > 0 ? t = _global_moment(e).subtract(Math.abs(i), "d").toDate() : t = _global_moment(t).toDate()) : (t = _global_moment(t).toDate(), e = _global_moment(t).add(Math.abs(i), "d").toDate()), t = _global_moment(t).startOf("d").toDate(), e = _global_moment(e).startOf("d").toDate(), { start: t, end: e };
   }
-  createMinTimeMetaData(t, e, i, s, r, o) {
-    let a = [];
-    !s && t.symbol != i && (s = x.defaultFormatter[i]);
-    let h = u(r), l = u(o), c = u(r), f = null, g = null, y = t.commonStyle || {};
-    for (; c.isBetween(h, l, "second", "[)"); ) {
-      g = c.clone(), f = u.min([c.add(e, i).startOf(i), l]);
-      let _ = {
+  createMinTimeMetaData(t, e, i, s, o, a) {
+    let l = [];
+    !s && t.symbol != i && (s = TimeScale.defaultFormatter[i]);
+    let h = _global_moment(o), c = _global_moment(a), u = _global_moment(o), g = null, p = null, m = t.commonStyle || {};
+    for (; u.isBetween(h, c, "second", "[)"); ) {
+      p = u.clone(), g = _global_moment.min([u.add(e, i).startOf(i), c]);
+      let w = {
         symbol: i,
-        start: g.toDate(),
-        end: f.toDate(),
-        counts: f.diff(g, i) / e || 1,
+        start: p.toDate(),
+        end: g.toDate(),
+        counts: g.diff(p, i) / e || 1,
         baseWidth: this.fullOption.baseWidth,
-        text: Et(s || t.formatter, g.toDate(), f.toDate())
+        text: dateFormatHandle(s || t.formatter, p.toDate(), g.toDate())
       };
-      _.style = d(d({}, y), w(t.style) ? t.style(_) : {}), this.initStyleProperties(_, i), a.push(_);
+      w.style = d(d({}, m), isFunction(t.style) ? t.style(w) : {}), this.initStyleProperties(w, i), l.push(w);
+    }
+    return l;
+  }
+  createTimeMetaData(t, e, i, s, o) {
+    let a = [], l = _global_moment(s), h = _global_moment(o), c = _global_moment(s), u = null, g = null, p = t.commonStyle || {};
+    for (; c.isBetween(l, h, "second", "[)"); ) {
+      g = c.clone(), u = _global_moment.min([c.add(1, t.symbol).startOf(t.symbol), h]);
+      let m = {
+        symbol: t.symbol,
+        start: g.toDate(),
+        end: u.toDate(),
+        counts: u.diff(g, i) / e || 1,
+        baseWidth: this.fullOption.baseWidth,
+        text: dateFormatHandle(t.formatter, g.toDate(), u.toDate())
+      };
+      m.style = d(d({}, p), isFunction(t.style) ? t.style(m) : {}), a.push(m);
     }
     return a;
-  }
-  createTimeMetaData(t, e, i, s, r) {
-    let o = [], a = u(s), h = u(r), l = u(s), c = null, f = null, g = t.commonStyle || {};
-    for (; l.isBetween(a, h, "second", "[)"); ) {
-      f = l.clone(), c = u.min([l.add(1, t.symbol).startOf(t.symbol), h]);
-      let y = {
-        symbol: t.symbol,
-        start: f.toDate(),
-        end: c.toDate(),
-        counts: c.diff(f, i) / e || 1,
-        baseWidth: this.fullOption.baseWidth,
-        text: Et(t.formatter, f.toDate(), c.toDate())
-      };
-      y.style = d(d({}, g), w(t.style) ? t.style(y) : {}), o.push(y);
-    }
-    return o;
   }
   initStyleProperties(t, e) {
     if (!this.styleProperties && t.symbol == e) {
       let i = 0;
-      ke(t.style.padding) ? t.style.padding.length > 2 ? i = t.style.padding[1] + t.style.padding[3] : i = t.style.padding[1] : i = t.style.padding || 0, this.styleProperties = {
+      isArray(t.style.padding) ? t.style.padding.length > 2 ? i = t.style.padding[1] + t.style.padding[3] : i = t.style.padding[1] : i = t.style.padding || 0, this.styleProperties = {
         border: (t.style.borderWidth || 0.5) * 2,
         padding: i
       };
@@ -327,18 +327,18 @@ const Ft = class Wt extends G {
     }
   }
 };
-Ft.type = "timeScale";
-let xe = Ft;
-const jt = class qt {
+_TimeScaleModel.type = "timeScale";
+let TimeScaleModel = _TimeScaleModel;
+const _ResizeEvent = class G {
   constructor(t) {
-    this.type = qt.type, this.source = t;
+    this.type = G.type, this.source = t;
   }
 };
-jt.type = "resize";
-let j = jt;
-class at extends zrender.Group {
+_ResizeEvent.type = "resize";
+let ResizeEvent = _ResizeEvent;
+class Container extends zrender.Group {
   constructor() {
-    super(...arguments), this.eventType = j.type;
+    super(...arguments), this.eventType = ResizeEvent.type;
   }
   /**
    * 在当前容器添加元素
@@ -370,9 +370,9 @@ class at extends zrender.Group {
     this.resize(), this.component && this.component.refresh();
   }
 }
-const Vt = class $t extends at {
+const _StackContainer = class Y extends Container {
   constructor() {
-    super(...arguments), this.type = $t.type;
+    super(...arguments), this.type = Y.type;
   }
   addHorizon(t) {
     t.hv = "horizon";
@@ -387,20 +387,20 @@ const Vt = class $t extends at {
   getLastChild(t) {
     let e;
     return this.eachChild((i) => {
-      i instanceof at && i.hv === t && (e = i);
+      i instanceof Container && i.hv === t && (e = i);
     }), e;
   }
   refresh() {
   }
 };
-Vt.type = "StackContainer";
-let I = Vt;
-const ht = class lt {
+_StackContainer.type = "StackContainer";
+let StackContainer = _StackContainer;
+const _AnimateManager = class R {
   constructor() {
     this.animateMap = /* @__PURE__ */ new Map();
   }
   static getInstance() {
-    return lt.instance;
+    return R.instance;
   }
   addAnimate(t, e, i) {
     let s = null;
@@ -410,21 +410,21 @@ const ht = class lt {
     let i = null, s = this.animateMap.get(t);
     if (s && (i = s.get(e)), i) {
       i._started = 0;
-      for (let r in i._tracks)
-        i._tracks[r]._finished = !1;
+      for (let o in i._tracks)
+        i._tracks[o]._finished = !1;
     }
     return i;
   }
-  createAnimate(t, e, i, s, r, o, a) {
-    let h = t[e], l = d(d({}, h), i), c = t.animate(e, o, !0).when(s, l).done(() => {
-      r && (t[e] = l);
+  createAnimate(t, e, i, s, o, a, l) {
+    let h = t[e], c = d(d({}, h), i), u = t.animate(e, a, !0).when(s, c).done(() => {
+      o && (t[e] = c);
     });
-    return lt.getInstance().addAnimate(t, a, c), c;
+    return R.getInstance().addAnimate(t, l, u), u;
   }
 };
-ht.instance = new ht();
-let J = ht;
-function Nt(n, t, e) {
+_AnimateManager.instance = new _AnimateManager();
+let AnimateManager = _AnimateManager;
+function addHover(n, t, e) {
   n.originStyle || (n.originStyle = n[t]), n.onmouseover = (i) => {
     if (i.event.preventDefault(), n.hoverForbid)
       return;
@@ -437,22 +437,22 @@ function Nt(n, t, e) {
     n.dirty(), n[t] = i;
   };
 }
-function z(n, t, e) {
+function applyTo(n, t, e) {
   if (!(!n || !t))
     for (let i in n)
-      t[i] ? w(n[i]) ? e && (t[i] = n[i]) : be(n[i]) ? z(n[i], t[i], e) : e && (t[i] = n[i]) : t[i] = n[i];
+      t[i] ? isFunction(n[i]) ? e && (t[i] = n[i]) : isObject(n[i]) ? applyTo(n[i], t[i], e) : e && (t[i] = n[i]) : t[i] = n[i];
 }
-var Kt = function() {
+var Entry = function() {
   function n(t) {
     this.value = t;
   }
   return n;
-}(), _e = function() {
+}(), LinkedList = function() {
   function n() {
     this._len = 0;
   }
   return n.prototype.insert = function(t) {
-    var e = new Kt(t);
+    var e = new Entry(t);
     return this.insertEntry(e), e;
   }, n.prototype.insertEntry = function(t) {
     this.head ? (this.tail.next = t, t.prev = this.tail, t.next = null, this.tail = t) : this.head = this.tail = t, this._len++;
@@ -464,21 +464,21 @@ var Kt = function() {
   }, n.prototype.clear = function() {
     this.head = this.tail = null, this._len = 0;
   }, n;
-}(), Me = function() {
+}(), LRU = function() {
   function n(t) {
-    this._list = new _e(), this._maxSize = 10, this._map = {}, this._maxSize = t;
+    this._list = new LinkedList(), this._maxSize = 10, this._map = {}, this._maxSize = t;
   }
   return n.prototype.put = function(t, e) {
-    var i = this._list, s = this._map, r = null;
+    var i = this._list, s = this._map, o = null;
     if (s[t] == null) {
-      var o = i.len(), a = this._lastRemovedEntry;
-      if (o >= this._maxSize && o > 0) {
+      var a = i.len(), l = this._lastRemovedEntry;
+      if (a >= this._maxSize && a > 0) {
         var h = i.head;
-        i.remove(h), delete s[h.key], r = h.value, this._lastRemovedEntry = h;
+        i.remove(h), delete s[h.key], o = h.value, this._lastRemovedEntry = h;
       }
-      a ? a.value = e : a = new Kt(e), a.key = t, i.insertEntry(a), s[t] = a;
+      l ? l.value = e : l = new Entry(e), l.key = t, i.insertEntry(l), s[t] = l;
     }
-    return r;
+    return o;
   }, n.prototype.get = function(t) {
     var e = this._map[t], i = this._list;
     if (e != null)
@@ -489,8 +489,8 @@ var Kt = function() {
     return this._list.len();
   }, n;
 }();
-const Ce = Me;
-var It = {
+const LRU$1 = LRU;
+var kCSSColorTable = {
   transparent: [0, 0, 0, 0],
   aliceblue: [240, 248, 255, 1],
   antiquewhite: [250, 235, 215, 1],
@@ -640,118 +640,118 @@ var It = {
   yellow: [255, 255, 0, 1],
   yellowgreen: [154, 205, 50, 1]
 };
-function A(n) {
+function clampCssByte(n) {
   return n = Math.round(n), n < 0 ? 0 : n > 255 ? 255 : n;
 }
-function Lt(n) {
+function clampCssFloat(n) {
   return n < 0 ? 0 : n > 1 ? 1 : n;
 }
-function nt(n) {
+function parseCssInt(n) {
   var t = n;
-  return t.length && t.charAt(t.length - 1) === "%" ? A(parseFloat(t) / 100 * 255) : A(parseInt(t, 10));
+  return t.length && t.charAt(t.length - 1) === "%" ? clampCssByte(parseFloat(t) / 100 * 255) : clampCssByte(parseInt(t, 10));
 }
-function H(n) {
+function parseCssFloat(n) {
   var t = n;
-  return t.length && t.charAt(t.length - 1) === "%" ? Lt(parseFloat(t) / 100) : Lt(parseFloat(t));
+  return t.length && t.charAt(t.length - 1) === "%" ? clampCssFloat(parseFloat(t) / 100) : clampCssFloat(parseFloat(t));
 }
-function st(n, t, e) {
+function cssHueToRgb(n, t, e) {
   return e < 0 ? e += 1 : e > 1 && (e -= 1), e * 6 < 1 ? n + (t - n) * e * 6 : e * 2 < 1 ? t : e * 3 < 2 ? n + (t - n) * (2 / 3 - e) * 6 : n;
 }
-function k(n, t, e, i, s) {
+function setRgba(n, t, e, i, s) {
   return n[0] = t, n[1] = e, n[2] = i, n[3] = s, n;
 }
-function ct(n, t) {
+function copyRgba(n, t) {
   return n[0] = t[0], n[1] = t[1], n[2] = t[2], n[3] = t[3], n;
 }
-var Jt = new Ce(20), W = null;
-function O(n, t) {
-  W && ct(W, t), W = Jt.put(n, W || t.slice());
+var colorCache = new LRU$1(20), lastRemovedArr = null;
+function putToCache(n, t) {
+  lastRemovedArr && copyRgba(lastRemovedArr, t), lastRemovedArr = colorCache.put(n, lastRemovedArr || t.slice());
 }
-function ze(n, t) {
+function parse(n, t) {
   if (n) {
     t = t || [];
-    var e = Jt.get(n);
+    var e = colorCache.get(n);
     if (e)
-      return ct(t, e);
+      return copyRgba(t, e);
     n = n + "";
     var i = n.replace(/ /g, "").toLowerCase();
-    if (i in It)
-      return ct(t, It[i]), O(n, t), t;
+    if (i in kCSSColorTable)
+      return copyRgba(t, kCSSColorTable[i]), putToCache(n, t), t;
     var s = i.length;
     if (i.charAt(0) === "#") {
       if (s === 4 || s === 5) {
-        var r = parseInt(i.slice(1, 4), 16);
-        if (!(r >= 0 && r <= 4095)) {
-          k(t, 0, 0, 0, 1);
+        var o = parseInt(i.slice(1, 4), 16);
+        if (!(o >= 0 && o <= 4095)) {
+          setRgba(t, 0, 0, 0, 1);
           return;
         }
-        return k(t, (r & 3840) >> 4 | (r & 3840) >> 8, r & 240 | (r & 240) >> 4, r & 15 | (r & 15) << 4, s === 5 ? parseInt(i.slice(4), 16) / 15 : 1), O(n, t), t;
+        return setRgba(t, (o & 3840) >> 4 | (o & 3840) >> 8, o & 240 | (o & 240) >> 4, o & 15 | (o & 15) << 4, s === 5 ? parseInt(i.slice(4), 16) / 15 : 1), putToCache(n, t), t;
       } else if (s === 7 || s === 9) {
-        var r = parseInt(i.slice(1, 7), 16);
-        if (!(r >= 0 && r <= 16777215)) {
-          k(t, 0, 0, 0, 1);
+        var o = parseInt(i.slice(1, 7), 16);
+        if (!(o >= 0 && o <= 16777215)) {
+          setRgba(t, 0, 0, 0, 1);
           return;
         }
-        return k(t, (r & 16711680) >> 16, (r & 65280) >> 8, r & 255, s === 9 ? parseInt(i.slice(7), 16) / 255 : 1), O(n, t), t;
+        return setRgba(t, (o & 16711680) >> 16, (o & 65280) >> 8, o & 255, s === 9 ? parseInt(i.slice(7), 16) / 255 : 1), putToCache(n, t), t;
       }
       return;
     }
-    var o = i.indexOf("("), a = i.indexOf(")");
-    if (o !== -1 && a + 1 === s) {
-      var h = i.substr(0, o), l = i.substr(o + 1, a - (o + 1)).split(","), c = 1;
+    var a = i.indexOf("("), l = i.indexOf(")");
+    if (a !== -1 && l + 1 === s) {
+      var h = i.substr(0, a), c = i.substr(a + 1, l - (a + 1)).split(","), u = 1;
       switch (h) {
         case "rgba":
-          if (l.length !== 4)
-            return l.length === 3 ? k(t, +l[0], +l[1], +l[2], 1) : k(t, 0, 0, 0, 1);
-          c = H(l.pop());
+          if (c.length !== 4)
+            return c.length === 3 ? setRgba(t, +c[0], +c[1], +c[2], 1) : setRgba(t, 0, 0, 0, 1);
+          u = parseCssFloat(c.pop());
         case "rgb":
-          if (l.length >= 3)
-            return k(t, nt(l[0]), nt(l[1]), nt(l[2]), l.length === 3 ? c : H(l[3])), O(n, t), t;
-          k(t, 0, 0, 0, 1);
+          if (c.length >= 3)
+            return setRgba(t, parseCssInt(c[0]), parseCssInt(c[1]), parseCssInt(c[2]), c.length === 3 ? u : parseCssFloat(c[3])), putToCache(n, t), t;
+          setRgba(t, 0, 0, 0, 1);
           return;
         case "hsla":
-          if (l.length !== 4) {
-            k(t, 0, 0, 0, 1);
+          if (c.length !== 4) {
+            setRgba(t, 0, 0, 0, 1);
             return;
           }
-          return l[3] = H(l[3]), Pt(l, t), O(n, t), t;
+          return c[3] = parseCssFloat(c[3]), hsla2rgba(c, t), putToCache(n, t), t;
         case "hsl":
-          if (l.length !== 3) {
-            k(t, 0, 0, 0, 1);
+          if (c.length !== 3) {
+            setRgba(t, 0, 0, 0, 1);
             return;
           }
-          return Pt(l, t), O(n, t), t;
+          return hsla2rgba(c, t), putToCache(n, t), t;
         default:
           return;
       }
     }
-    k(t, 0, 0, 0, 1);
+    setRgba(t, 0, 0, 0, 1);
   }
 }
-function Pt(n, t) {
-  var e = (parseFloat(n[0]) % 360 + 360) % 360 / 360, i = H(n[1]), s = H(n[2]), r = s <= 0.5 ? s * (i + 1) : s + i - s * i, o = s * 2 - r;
-  return t = t || [], k(t, A(st(o, r, e + 1 / 3) * 255), A(st(o, r, e) * 255), A(st(o, r, e - 1 / 3) * 255), 1), n.length === 4 && (t[3] = n[3]), t;
+function hsla2rgba(n, t) {
+  var e = (parseFloat(n[0]) % 360 + 360) % 360 / 360, i = parseCssFloat(n[1]), s = parseCssFloat(n[2]), o = s <= 0.5 ? s * (i + 1) : s + i - s * i, a = s * 2 - o;
+  return t = t || [], setRgba(t, clampCssByte(cssHueToRgb(a, o, e + 1 / 3) * 255), clampCssByte(cssHueToRgb(a, o, e) * 255), clampCssByte(cssHueToRgb(a, o, e - 1 / 3) * 255), 1), n.length === 4 && (t[3] = n[3]), t;
 }
-function De(n, t) {
-  var e = ze(n);
+function lift(n, t) {
+  var e = parse(n);
   if (e) {
     for (var i = 0; i < 3; i++)
       t < 0 ? e[i] = e[i] * (1 - t) | 0 : e[i] = (255 - e[i]) * t + e[i] | 0, e[i] > 255 ? e[i] = 255 : e[i] < 0 && (e[i] = 0);
-    return Oe(e, e.length === 4 ? "rgba" : "rgb");
+    return stringify(e, e.length === 4 ? "rgba" : "rgb");
   }
 }
-function Oe(n, t) {
+function stringify(n, t) {
   if (!(!n || !n.length)) {
     var e = n[0] + "," + n[1] + "," + n[2];
     return (t === "rgba" || t === "hsva" || t === "hsla") && (e += "," + n[3]), t + "(" + e + ")";
   }
 }
-const U = class T {
+const _Tooltip = class y {
   constructor() {
-    this.type = T.type, this.dom = this.createTooltip();
+    this.type = y.type, this.dom = this.createTooltip();
   }
   static getInstance() {
-    return T.instance;
+    return y.instance;
   }
   hide() {
     this.dom || (this.dom = this.createTooltip()), this.dom.classList.add("hide");
@@ -762,10 +762,10 @@ const U = class T {
     e <= this.dom.clientHeight ? this.dom.style.top = e + "px" : this.dom.style.top = e - this.dom.clientHeight + "px", t + this.dom.clientWidth <= s ? this.dom.style.left = t + "px" : this.dom.style.left = t - this.dom.clientWidth + "px";
   }
   static forbid() {
-    T.forbidden = !0;
+    y.forbidden = !0;
   }
   static allow() {
-    T.forbidden = !1;
+    y.forbidden = !1;
   }
   refresh() {
   }
@@ -783,50 +783,50 @@ const U = class T {
   static init(t) {
     let e = t.onmouseover, i = t.onmouseout;
     t.onmouseover = (s) => {
-      e && e(s), !T.forbidden && T.getInstance().show(s.event.clientX, s.event.clientY, t.getTooltip());
+      e && e(s), !y.forbidden && y.getInstance().show(s.event.clientX, s.event.clientY, t.getTooltip());
     }, t.onmouseout = (s) => {
-      i && i(s), T.getInstance().hide();
+      i && i(s), y.getInstance().hide();
     };
   }
   static initElement(t, e) {
     let i = t.onmouseover, s = t.onmouseout;
-    t.onmouseover = (r) => {
-      i && i(r), !T.forbidden && T.getInstance().show(r.event.clientX, r.event.clientY, e);
-    }, t.onmouseout = (r) => {
-      s && s(r), T.getInstance().hide();
+    t.onmouseover = (o) => {
+      i && i(o), !y.forbidden && y.getInstance().show(o.event.clientX, o.event.clientY, e);
+    }, t.onmouseout = (o) => {
+      s && s(o), y.getInstance().hide();
     };
   }
   setTheme(t, e) {
   }
 };
-U.type = "Tooltip";
-U.instance = new U();
-let q = U;
-class Re {
+_Tooltip.type = "Tooltip";
+_Tooltip.instance = new _Tooltip();
+let Tooltip = _Tooltip;
+class TimeScaleView {
   render(t, e) {
     if (!t)
       return [];
-    let i = this, s = new I();
-    return t.metaDataList.forEach((r, o) => {
-      let a = new I();
-      r.forEach((h, l) => {
-        a.addHorizon(i.paint(h, t.styleProperties));
-      }), s.addVertical(a);
+    let i = this, s = new StackContainer();
+    return t.metaDataList.forEach((o, a) => {
+      let l = new StackContainer();
+      o.forEach((h, c) => {
+        l.addHorizon(i.paint(h, t.styleProperties));
+      }), s.addVertical(l);
     }), [s];
   }
   paint(t, e) {
     let i = new zrender.Group();
     i.dirty();
-    let s = d({}, t.style), r = t.baseWidth || rt.cellWidth, o = s.height || rt.cellHeight, a = r * t.counts + (t.counts * (e.border + e.padding) - ((s.padding || 0) + (s.borderWidth || 0.5) * 2)), h = null;
+    let s = d({}, t.style), o = t.baseWidth || constant.cellWidth, a = s.height || constant.cellHeight, l = o * t.counts + (t.counts * (e.border + e.padding) - ((s.padding || 0) + (s.borderWidth || 0.5) * 2)), h = null;
     return i.add(
       h = new zrender.Text({
         style: d({
           text: t.text,
-          width: a,
-          x: 0.5 * a,
-          height: o,
+          width: l,
+          x: 0.5 * l,
+          height: a,
           align: "center",
-          lineHeight: o,
+          lineHeight: a,
           fontSize: 12,
           backgroundColor: "#1ba78480",
           borderColor: "#1ba784",
@@ -835,12 +835,12 @@ class Re {
           borderRadius: 3
         }, t.style)
       })
-    ), Nt(h, "style", {
-      backgroundColor: De(h.style.backgroundColor, 0.2)
-    }), q.initElement(i, t.text), i;
+    ), addHover(h, "style", {
+      backgroundColor: lift(h.style.backgroundColor, 0.2)
+    }), Tooltip.initElement(i, t.text), i;
   }
 }
-class Ee extends G {
+class GridModel extends Model {
   constructor(t, e) {
     super(t || {}, t || {}), this.timeScale = e;
   }
@@ -863,25 +863,25 @@ class Ee extends G {
   initCol() {
     let t = 100;
     this.table && (t = this.table.getHeight());
-    let e = [], r = this.timeScale.tierContainer.getContainerByName(this.timeScale.type).childAt(0).children().reduce(
-      (a, h) => a.childCount() >= h.childCount() ? a : h
-    ), o = d(d({}, this.originOption.style || {}), this.originOption.colStyle || {});
-    return r.eachChild((a) => {
+    let e = [], o = this.timeScale.tierContainer.getContainerByName(this.timeScale.type).childAt(0).children().reduce(
+      (l, h) => l.childCount() >= h.childCount() ? l : h
+    ), a = d(d({}, this.originOption.style || {}), this.originOption.colStyle || {});
+    return o.eachChild((l) => {
       e.push({
-        x1: a.x,
-        x2: a.x,
+        x1: l.x,
+        x2: l.x,
         y1: 0,
         y2: t
       });
     }), {
       value: e,
-      style: o
+      style: a
     };
   }
   initRow() {
-    let t = this.timeScale.getTimeLineWidth(), e = [], i, s, r = d(d({}, this.originOption.style || {}), this.originOption.rowStyle || {}), o = this.table.rowGroup, a = o.y + o.parent.y;
-    return o.eachChild((h) => {
-      i = h.getBoundingRect(), s = a + h.y + i.height, e.push({
+    let t = this.timeScale.getTimeLineWidth(), e = [], i, s, o = d(d({}, this.originOption.style || {}), this.originOption.rowStyle || {}), a = this.table.rowGroup, l = a.y + a.parent.y;
+    return a.eachChild((h) => {
+      i = h.getBoundingRect(), s = l + h.y + i.height, e.push({
         x1: 0,
         x2: t || 1e3,
         y1: s,
@@ -889,21 +889,21 @@ class Ee extends G {
       });
     }), {
       value: e,
-      style: r
+      style: o
     };
   }
 }
-class Ie {
+class GridView {
   render(t, e) {
     let i = new zrender.Group({
       silent: !1
     }), s = t.metaData;
     s.row && i.add(this.paintRow(s.row)), s.col && i.add(this.paintCol(s.col));
-    let r = i.getBoundingRect();
+    let o = i.getBoundingRect();
     return i.add(new zrender.Rect({
       shape: {
-        width: r.width,
-        height: r.height
+        width: o.width,
+        height: o.height
       },
       style: {
         fill: t.originOption.backGroundColor || "#ffffff00"
@@ -942,9 +942,9 @@ class Ie {
     }), e;
   }
 }
-class Le {
+class Grid {
   constructor(t, e) {
-    this.timeScale = e, this.model = new Ee(t, e), this.view = new Ie();
+    this.timeScale = e, this.model = new GridModel(t, e), this.view = new GridView();
   }
   setTimeScale(t) {
     this.timeScale = t, this.model.setTimeScale(t);
@@ -969,7 +969,7 @@ class Le {
   setTheme(t) {
   }
 }
-class Q extends at {
+class TierContainer extends Container {
   constructor(t) {
     super(), this.tierList = [], this.tierNameMap = /* @__PURE__ */ new Map(), this.tier = t || 1, this.initTiers();
   }
@@ -1047,7 +1047,7 @@ class Q extends at {
   initTiers() {
     let t = null;
     for (let e = 0; e < this.tier; e++)
-      this.tierList.push(t = new I()), this.tierNameMap.set(e + 1, e + 1), this.add(t);
+      this.tierList.push(t = new StackContainer()), this.tierNameMap.set(e + 1, e + 1), this.add(t);
   }
   reAddChild() {
     this.removeAll();
@@ -1057,7 +1057,7 @@ class Q extends at {
     });
   }
 }
-const Ut = class dt extends G {
+const _ScrollModel = class D extends Model {
   constructor(t, e) {
     super(t || {}, e || {});
   }
@@ -1090,7 +1090,7 @@ const Ut = class dt extends G {
       thumbLength: Math.round(this.container.__width / this.container.realWidth * this.container.__width),
       trackStyle: this.originOption.trackStyle || {},
       thumbStyle: this.originOption.thumbStyle || {},
-      height: this.originOption.thickness || dt.scrollLength
+      height: this.originOption.thickness || D.scrollLength
     };
   }
   createScrollVertical() {
@@ -1104,13 +1104,13 @@ const Ut = class dt extends G {
       thumbLength: Math.round(this.container.__height / this.container.realHeight * this.container.__height),
       trackStyle: this.originOption.trackStyle || {},
       thumbStyle: this.originOption.thumbStyle || {},
-      width: this.originOption.thickness || dt.scrollLength
+      width: this.originOption.thickness || D.scrollLength
     };
   }
 };
-Ut.scrollLength = 8;
-let Pe = Ut;
-class Bt extends zrender.Rect {
+_ScrollModel.scrollLength = 8;
+let ScrollModel = _ScrollModel;
+class Thumb extends zrender.Rect {
   constructor(t, e) {
     super(t), this.type = e, this.draggable = !1, this.initEvent();
   }
@@ -1118,61 +1118,61 @@ class Bt extends zrender.Rect {
     let t = this, e, i;
     t.onmousedown = (s) => {
       s.event.preventDefault();
-      let r = t.parent.parent;
-      e = r.realWidth / r.__width, i = r.realHeight / r.__height, t.isMouseDown = !0, document.onmousemove = (o) => {
-        if (o.preventDefault(), t.isMouseDown) {
+      let o = t.parent.parent;
+      e = o.realWidth / o.__width, i = o.realHeight / o.__height, t.isMouseDown = !0, document.onmousemove = (a) => {
+        if (a.preventDefault(), t.isMouseDown) {
           t.dirty();
-          let a = 0;
+          let l = 0;
           if (t.type === "horizon") {
-            let l = t.scroll.horizonTarget || r.childAt(0);
-            if (t.x + o.movementX + t.getBoundingRect().width > r.__width || t.x + o.movementX < 0)
+            let c = t.scroll.horizonTarget || o.childAt(0);
+            if (t.x + a.movementX + t.getBoundingRect().width > o.__width || t.x + a.movementX < 0)
               return;
-            a = o.movementX, t.setPosition([t.x + o.movementX, t.y]), l.setPosition([l.x - o.movementX * e, l.y]);
+            l = a.movementX, t.setPosition([t.x + a.movementX, t.y]), c.setPosition([c.x - a.movementX * e, c.y]);
           }
           if (t.type === "vertical") {
-            let l = t.scroll.verticalTarget || r.childAt(0);
-            if (t.y + o.movementY + t.getBoundingRect().height > r.__height || t.y + o.movementY < 0)
+            let c = t.scroll.verticalTarget || o.childAt(0);
+            if (t.y + a.movementY + t.getBoundingRect().height > o.__height || t.y + a.movementY < 0)
               return;
-            a = o.movementY, t.setPosition([t.x, t.y + o.movementY]), l.setPosition([l.x, l.y - o.movementY * i]);
+            l = a.movementY, t.setPosition([t.x, t.y + a.movementY]), c.setPosition([c.x, c.y - a.movementY * i]);
           }
           let h = t.scroll.items;
-          h && h.forEach((l) => {
-            t.type == l.type && l.scroll.moveTo(l.type, a, !0);
+          h && h.forEach((c) => {
+            t.type == c.type && c.scroll.moveTo(c.type, l, !0);
           });
         }
-      }, document.onmouseup = (o) => {
-        o.preventDefault(), t.isMouseDown = !1, document.onmousemove = null, document.onmouseup = null;
+      }, document.onmouseup = (a) => {
+        a.preventDefault(), t.isMouseDown = !1, document.onmousemove = null, document.onmouseup = null;
       };
     };
   }
   scrollTo(t, e) {
-    let i = this, s, r, o = i.parent.parent;
-    if (!o)
+    let i = this, s, o, a = i.parent.parent;
+    if (!a)
       return;
-    s = o.realWidth / o.__width, r = o.realHeight / o.__height;
-    let a = 0;
+    s = a.realWidth / a.__width, o = a.realHeight / a.__height;
+    let l = 0;
     if (i.dirty(), i.type === "horizon") {
-      let h = i.scroll.horizonTarget || o.childAt(0);
-      if (i.x + t + i.getBoundingRect().width > o.__width || i.x + t < 0)
+      let h = i.scroll.horizonTarget || a.childAt(0);
+      if (i.x + t + i.getBoundingRect().width > a.__width || i.x + t < 0)
         return;
-      a = t * s, i.setPosition([i.x + t, i.y]), h.setPosition([h.x - a, h.y]);
+      l = t * s, i.setPosition([i.x + t, i.y]), h.setPosition([h.x - l, h.y]);
     }
     if (i.type === "vertical") {
-      let h = i.scroll.verticalTarget || o.childAt(0);
-      if (i.y + t + i.getBoundingRect().height > o.__height || i.y + t < 0)
+      let h = i.scroll.verticalTarget || a.childAt(0);
+      if (i.y + t + i.getBoundingRect().height > a.__height || i.y + t < 0)
         return;
-      a = t * r, i.setPosition([i.x, i.y + t]), h.setPosition([h.x, h.y - a]);
+      l = t * o, i.setPosition([i.x, i.y + t]), h.setPosition([h.x, h.y - l]);
     }
     if (!e) {
       let h = i.scroll.items;
-      h && h.forEach((l) => {
-        i.type == l.type && l.scroll.moveTo(l.type, t, !0);
+      h && h.forEach((c) => {
+        i.type == c.type && c.scroll.moveTo(c.type, t, !0);
       });
     }
-    return a;
+    return l;
   }
 }
-const b = class ut extends zrender.Group {
+const _ScrollItem = class O extends zrender.Group {
   constructor(t, e, i, s) {
     super(), this.scroll = s, this.track = t, this.thumb = e, this.type = i, this.thumb.scroll = this.scroll, this.init();
   }
@@ -1185,17 +1185,17 @@ const b = class ut extends zrender.Group {
   initHover() {
     let t = this.offset || 8, e = this;
     this.onmouseover = (i) => {
-      e.hovered || (i.event.preventDefault(), ut.mouseoverHandler[this.type](e, t), this.hovered = !0);
+      e.hovered || (i.event.preventDefault(), O.mouseoverHandler[this.type](e, t), this.hovered = !0);
     }, this.onmouseout = (i) => {
-      this.thumb.contain(i.event.zrX, i.event.zrY) || this.track.contain(i.event.zrX, i.event.zrY) || (i.event.preventDefault(), ut.mouseoutHandler[this.type](e, t), this.hovered = !1);
+      this.thumb.contain(i.event.zrX, i.event.zrY) || this.track.contain(i.event.zrX, i.event.zrY) || (i.event.preventDefault(), O.mouseoutHandler[this.type](e, t), this.hovered = !1);
     };
   }
 };
-b.duration = 120;
-b.mouseoverHandler = {
+_ScrollItem.duration = 120;
+_ScrollItem.mouseoverHandler = {
   horizon: (n, t) => {
-    let e = J.getInstance(), i = null;
-    i = e.getAnimate(n.track, "mouseover"), i || (i = e.addAnimate(n.track, "mouseover", n.track.animate("shape", !1).when(b.duration, {
+    let e = AnimateManager.getInstance(), i = null;
+    i = e.getAnimate(n.track, "mouseover"), i || (i = e.addAnimate(n.track, "mouseover", n.track.animate("shape", !1).when(_ScrollItem.duration, {
       y: n.trackPosition - t,
       height: n.trackLength + t
     }).done(() => {
@@ -1207,7 +1207,7 @@ b.mouseoverHandler = {
       });
     })));
     let s = null;
-    s = e.getAnimate(n.thumb, "mouseover"), s || (s = e.addAnimate(n.thumb, "mouseover", n.thumb.animate("shape", !1).when(b.duration, {
+    s = e.getAnimate(n.thumb, "mouseover"), s || (s = e.addAnimate(n.thumb, "mouseover", n.thumb.animate("shape", !1).when(_ScrollItem.duration, {
       y: n.thumbPosition - t,
       height: n.thumbLength + t
     }).done(() => {
@@ -1220,8 +1220,8 @@ b.mouseoverHandler = {
     }))), n.track.updateDuringAnimation("shape"), n.thumb.updateDuringAnimation("shape"), i.start(), s.start();
   },
   vertical: (n, t) => {
-    let e = J.getInstance(), i = null;
-    i = e.getAnimate(n.track, "mouseover"), i || (i = e.addAnimate(n.track, "mouseover", n.track.animate("shape", !1).when(b.duration, {
+    let e = AnimateManager.getInstance(), i = null;
+    i = e.getAnimate(n.track, "mouseover"), i || (i = e.addAnimate(n.track, "mouseover", n.track.animate("shape", !1).when(_ScrollItem.duration, {
       x: n.trackPosition - t,
       width: n.trackLength + t
     }).done(() => {
@@ -1233,7 +1233,7 @@ b.mouseoverHandler = {
       });
     })));
     let s = null;
-    s = e.getAnimate(n.thumb, "mouseover"), s || (s = e.addAnimate(n.thumb, "mouseover", n.thumb.animate("shape", !1).when(b.duration, {
+    s = e.getAnimate(n.thumb, "mouseover"), s || (s = e.addAnimate(n.thumb, "mouseover", n.thumb.animate("shape", !1).when(_ScrollItem.duration, {
       x: n.thumbPosition - t,
       width: n.thumbLength + t
     }).done(() => {
@@ -1246,10 +1246,10 @@ b.mouseoverHandler = {
     }))), n.track.updateDuringAnimation("shape"), n.thumb.updateDuringAnimation("shape"), i.start(), s.start();
   }
 };
-b.mouseoutHandler = {
+_ScrollItem.mouseoutHandler = {
   horizon: (n, t) => {
-    let e = J.getInstance(), i = null;
-    i = e.getAnimate(n.track, "mouseout"), i || (i = e.addAnimate(n.track, "mouseout", n.track.animate("shape", !1).when(b.duration, {
+    let e = AnimateManager.getInstance(), i = null;
+    i = e.getAnimate(n.track, "mouseout"), i || (i = e.addAnimate(n.track, "mouseout", n.track.animate("shape", !1).when(_ScrollItem.duration, {
       y: n.trackPosition,
       height: n.trackLength
     }).done(() => {
@@ -1261,7 +1261,7 @@ b.mouseoutHandler = {
       });
     })));
     let s = null;
-    s = e.getAnimate(n.thumb, "mouseout"), s || (s = e.addAnimate(n.thumb, "mouseout", n.thumb.animate("shape", !1).when(b.duration, {
+    s = e.getAnimate(n.thumb, "mouseout"), s || (s = e.addAnimate(n.thumb, "mouseout", n.thumb.animate("shape", !1).when(_ScrollItem.duration, {
       y: n.thumbPosition,
       height: n.thumbLength
     }).done(() => {
@@ -1274,8 +1274,8 @@ b.mouseoutHandler = {
     }))), n.track.updateDuringAnimation("shape"), n.thumb.updateDuringAnimation("shape"), i.start(), s.start();
   },
   vertical: (n, t) => {
-    let e = J.getInstance(), i = null;
-    i = e.getAnimate(n.track, "mouseout"), i || (i = e.addAnimate(n.track, "mouseout", n.track.animate("shape", !1).when(b.duration, {
+    let e = AnimateManager.getInstance(), i = null;
+    i = e.getAnimate(n.track, "mouseout"), i || (i = e.addAnimate(n.track, "mouseout", n.track.animate("shape", !1).when(_ScrollItem.duration, {
       x: n.trackPosition,
       width: n.trackLength
     }).done(() => {
@@ -1287,7 +1287,7 @@ b.mouseoutHandler = {
       });
     })));
     let s = null;
-    s = e.getAnimate(n.thumb, "mouseout"), s || (s = e.addAnimate(n.thumb, "mouseout", n.thumb.animate("shape", !1).when(b.duration, {
+    s = e.getAnimate(n.thumb, "mouseout"), s || (s = e.addAnimate(n.thumb, "mouseout", n.thumb.animate("shape", !1).when(_ScrollItem.duration, {
       x: n.thumbPosition,
       width: n.thumbLength
     }).done(() => {
@@ -1300,8 +1300,8 @@ b.mouseoutHandler = {
     }))), n.track.updateDuringAnimation("shape"), n.thumb.updateDuringAnimation("shape"), i.start(), s.start();
   }
 };
-let At = b;
-class Be {
+let ScrollItem = _ScrollItem;
+class ScrollView {
   render(t, e) {
     let i = [];
     return t.horizon && i.push(this.paintHorizon(t)), t.vertical && i.push(this.paintVertical(t)), i;
@@ -1315,7 +1315,7 @@ class Be {
       style: d({
         fill: "#acacac60"
       }, t.horizon.trackStyle)
-    }), i = new Bt({
+    }), i = new Thumb({
       shape: {
         y: 2,
         x: 2,
@@ -1325,7 +1325,7 @@ class Be {
       style: d({
         fill: "#acacac"
       }, t.horizon.thumbStyle)
-    }, "horizon"), s = new At(e, i, "horizon", t.scroll);
+    }, "horizon"), s = new ScrollItem(e, i, "horizon", t.scroll);
     return s.setHoverOffset(t.originOption.hoverOffset), t.scroll.setHorizonScroll(s), t.container.addBottom(s), s;
   }
   paintVertical(t) {
@@ -1337,7 +1337,7 @@ class Be {
       style: d({
         fill: "#acacac60"
       }, t.vertical.trackStyle)
-    }), i = new Bt({
+    }), i = new Thumb({
       shape: {
         y: 2,
         x: 2,
@@ -1348,13 +1348,13 @@ class Be {
         fill: "#acacac"
       }, t.vertical.thumbStyle),
       draggable: !0
-    }, "vertical"), s = new At(e, i, "vertical", t.scroll);
+    }, "vertical"), s = new ScrollItem(e, i, "vertical", t.scroll);
     return s.setHoverOffset(t.originOption.hoverOffset), t.scroll.setVerticalScroll(s), t.container.addRight(s), s;
   }
 }
-class Ae {
+class Scroll {
   constructor(t, e) {
-    this.items = /* @__PURE__ */ new Set(), this.model = new Pe(t, t), this.model.setScroll(this), this.view = new Be(), this.model.setContainer(e);
+    this.items = /* @__PURE__ */ new Set(), this.model = new ScrollModel(t, t), this.model.setScroll(this), this.view = new ScrollView(), this.model.setContainer(e);
   }
   setView(t) {
     this.view = t;
@@ -1394,9 +1394,9 @@ class Ae {
     this.model.fullOption = t, this.model.originOption = t;
   }
 }
-const pt = class Qt {
+const _EventManager = class X {
   static getInstance() {
-    return Qt.instance;
+    return X.instance;
   }
   constructor() {
   }
@@ -1407,9 +1407,9 @@ const pt = class Qt {
     let e = this.listenerMap.get(t.type), i = this.extraActionMap;
     e && e.forEach((s) => {
       s.handleEvent(t);
-      let r = i.get(s);
-      r && r.forEach((o) => {
-        o.action(s, o.target);
+      let o = i.get(s);
+      o && o.forEach((a) => {
+        a.action(s, a.target);
       });
     });
   }
@@ -1450,17 +1450,17 @@ const pt = class Qt {
     this.listenerMap = /* @__PURE__ */ new Map(), this.extraActionMap = /* @__PURE__ */ new Map();
   }
 };
-pt.instance = new pt();
-let R = pt;
-const Zt = class te extends I {
+_EventManager.instance = new _EventManager();
+let EventManager = _EventManager;
+const _FixedContainer = class W extends StackContainer {
   constructor(t, e, i, s) {
-    super(), this.type = te.type, this.__origin_width = t, this.__origin_height = e, this.__overflow = i, this.__scrollOption = s || {}, this.calcWeightAndHeight(), this.initContentGroup(), this.refreshClipPath(), this.initEvent(), R.getInstance().registerListener(this);
+    super(), this.type = W.type, this.__origin_width = t, this.__origin_height = e, this.__overflow = i, this.__scrollOption = s || {}, this.calcWeightAndHeight(), this.initContentGroup(), this.refreshClipPath(), this.initEvent(), EventManager.getInstance().registerListener(this);
   }
   setScrollerOption(t) {
     this.__scrollOption = t, this.__scroll.setOption(t);
   }
   initContentGroup() {
-    this.__content = new P(this), this.add(this.__content);
+    this.__content = new ContentContainer(this), this.add(this.__content);
   }
   refreshClipPath() {
     this.__clipPath = new zrender.Rect({
@@ -1475,19 +1475,19 @@ const Zt = class te extends I {
     return this.refreshScroll(), e;
   }
   addContent(t) {
-    let e = new P(this);
+    let e = new ContentContainer(this);
     e.add(t);
     let i = this.__content.add(e);
     return this.realWidth = super.getBoundingRect().width, this.realHeight = super.getBoundingRect().height, this.refreshScroll(), i;
   }
   addContentHorizon(t) {
-    let e = new P(this);
+    let e = new ContentContainer(this);
     e.add(t);
     let i = this.__content.addHorizon(e);
     return this.realWidth = super.getBoundingRect().width, this.realHeight = super.getBoundingRect().height, this.refreshScroll(), i;
   }
   addContentVertical(t) {
-    let e = new P(this);
+    let e = new ContentContainer(this);
     e.add(t);
     let i = this.__content.addVertical(e);
     return this.realWidth = super.getBoundingRect().width, this.realHeight = super.getBoundingRect().height, this.refreshScroll(), i;
@@ -1526,13 +1526,13 @@ const Zt = class te extends I {
     return super.getBoundingRect(t);
   }
   calcWeightAndHeight() {
-    if (this.__width = parseFloat(this.__origin_width), this.__height = parseFloat(this.__origin_height), this.parent && this.parent instanceof P) {
+    if (this.__width = parseFloat(this.__origin_width), this.__height = parseFloat(this.__origin_height), this.parent && this.parent instanceof ContentContainer) {
       let t = this.parent.container;
-      E(this.__origin_width) && (this.__width = t.__width * (parseFloat(this.__origin_width.split("%")[0]) / 100)), E(this.__origin_height) && (this.__height = t.__height * (parseFloat(this.__origin_height.split("%")[0]) / 100));
+      isString(this.__origin_width) && (this.__width = t.__width * (parseFloat(this.__origin_width.split("%")[0]) / 100)), isString(this.__origin_height) && (this.__height = t.__height * (parseFloat(this.__origin_height.split("%")[0]) / 100));
     }
   }
   refreshScroll() {
-    this.__overflow != "hidden" && (!this.__scroll && (this.__scroll = new Ae(this.__scrollOption || {}, this)), this.__scroll.model.setOption(this.__scrollOption), this.__scroll.refresh());
+    this.__overflow != "hidden" && (!this.__scroll && (this.__scroll = new Scroll(this.__scrollOption || {}, this)), this.__scroll.model.setOption(this.__scrollOption), this.__scroll.refresh());
   }
   initEvent() {
     let t = this;
@@ -1541,14 +1541,14 @@ const Zt = class te extends I {
     };
   }
 };
-Zt.type = "FixedContainer";
-let St = Zt;
-class P extends I {
+_FixedContainer.type = "FixedContainer";
+let FixedContainer = _FixedContainer;
+class ContentContainer extends StackContainer {
   constructor(t) {
     super(), this.container = t;
   }
 }
-class He {
+class Coord {
   constructor(t) {
     this.timeScale = t;
   }
@@ -1560,17 +1560,17 @@ class He {
   }
   xToDate(t) {
     let e = Math.floor(t / this.accuracy);
-    return u(this.timeScale.model.start).add(e, this.accuracyUnit).toDate();
+    return _global_moment(this.timeScale.model.start).add(e, this.accuracyUnit).toDate();
   }
   dateToX(t) {
-    return t ? Math.ceil(u(t).diff(u(this.startDate), this.accuracyUnit)) * this.accuracy : void 0;
+    return t ? Math.ceil(_global_moment(t).diff(_global_moment(this.startDate), this.accuracyUnit)) * this.accuracy : void 0;
   }
   initStartPosition() {
     this.startDate = this.timeScale.model.start, this.startPosition = this.timeScale.container.x;
   }
   initAccuracy() {
     this.accuracyUnit = this.timeScale.model.fullOption.accuracy;
-    let t = 1e13, e = this.timeScale.getTimeLineWidth(), i = u(this.timeScale.model.end).diff(u(this.timeScale.model.start), this.accuracyUnit);
+    let t = 1e13, e = this.timeScale.getTimeLineWidth(), i = _global_moment(this.timeScale.model.end).diff(_global_moment(this.timeScale.model.start), this.accuracyUnit);
     this.accuracy = Math.round(e / i * t) / t;
   }
   initEvent() {
@@ -1581,15 +1581,15 @@ class He {
     };
   }
 }
-const ee = class V {
+const _ComponentManager = class k {
   constructor() {
     this.componentMap = /* @__PURE__ */ new Map();
   }
   static registerInstance(t) {
-    V.instanceMap.set(t, new V());
+    k.instanceMap.set(t, new k());
   }
   static getInstance(t) {
-    return V.instanceMap.get(t);
+    return k.instanceMap.get(t);
   }
   componentRegister(t, e) {
     this.componentMap.set(t, e);
@@ -1598,21 +1598,21 @@ const ee = class V {
     return this.componentMap.get(t);
   }
 };
-ee.instanceMap = /* @__PURE__ */ new Map();
-let m = ee;
-class Ye {
+_ComponentManager.instanceMap = /* @__PURE__ */ new Map();
+let ComponentManager = _ComponentManager;
+class MarkItem {
 }
-const ie = class ne extends Ye {
+const _DateMark = class j extends MarkItem {
   constructor(t) {
-    super(), this.type = ne.type, this.date = u(t.date).toDate(), this.lineStyle = t.lineStyle, this.textStyle = t.textStyle, this.length = t.length, this.content = t.text;
+    super(), this.type = j.type, this.date = _global_moment(t.date).toDate(), this.lineStyle = t.lineStyle, this.textStyle = t.textStyle, this.length = t.length, this.content = t.text;
   }
   paint() {
-    let t = this, e = m.getInstance(this.jcGantt).getComponent(x.type), i = e.getTimeLineHeight(), r = e.coord.dateToX(this.date);
+    let t = this, e = ComponentManager.getInstance(this.jcGantt).getComponent(TimeScale.type), i = e.getTimeLineHeight(), o = e.coord.dateToX(this.date);
     return this.group = new zrender.Group({ silent: !0 }), this.line = new zrender.Line({
       shape: {
-        x1: r,
+        x1: o,
         y1: i,
-        x2: r,
+        x2: o,
         y2: t.length
       },
       style: d({
@@ -1622,7 +1622,7 @@ const ie = class ne extends Ye {
       }, t.lineStyle)
     }), this.text = new zrender.Text({
       style: d({
-        x: r,
+        x: o,
         y: t.length,
         text: t.content,
         padding: 5,
@@ -1632,22 +1632,22 @@ const ie = class ne extends Ye {
     }), this.group.add(this.line), this.group.add(this.text), this.group;
   }
 };
-ie.type = "DateMark";
-let Ht = ie;
-const se = class gt {
+_DateMark.type = "DateMark";
+let DateMark = _DateMark;
+const _MarkTypeManager = class I {
   constructor() {
   }
   static registerMarkType(t, e) {
-    gt.typeMap.set(t, e);
+    I.typeMap.set(t, e);
   }
   static getMarkItem(t, e) {
-    let i = null, s = gt.typeMap.get(t);
-    return w(s) && (i = s(e)), i;
+    let i = null, s = I.typeMap.get(t);
+    return isFunction(s) && (i = s(e)), i;
   }
 };
-se.typeMap = (/* @__PURE__ */ new Map()).set(Ht.type, (n) => new Ht(n));
-let Ge = se;
-class Xe extends G {
+_MarkTypeManager.typeMap = (/* @__PURE__ */ new Map()).set(DateMark.type, (n) => new DateMark(n));
+let MarkTypeManager = _MarkTypeManager;
+class MarkModel extends Model {
   constructor(t) {
     super(t, t), this.items = [];
   }
@@ -1656,7 +1656,7 @@ class Xe extends G {
     if (this.items = [], this.originOption.marks) {
       let e = null;
       this.originOption.marks.forEach((i) => {
-        e = Ge.getMarkItem(i.type, i.arg), e && (e.jcGantt = t.jcGantt, t.items.push(e));
+        e = MarkTypeManager.getMarkItem(i.type, i.arg), e && (e.jcGantt = t.jcGantt, t.items.push(e));
       });
     }
   }
@@ -1667,7 +1667,7 @@ class Xe extends G {
     this.originOption = t;
   }
 }
-class Fe {
+class MarkView {
   render(t, e) {
     let i = new zrender.Group();
     return t.items.forEach((s) => {
@@ -1675,12 +1675,12 @@ class Fe {
     }), [i];
   }
 }
-const re = class oe {
+const _Mark = class V {
   constructor(t, e) {
-    this.type = oe.type, this.jcGantt = t, this.option = S(e), this.model = new Xe(e), this.model.jcGantt = this.jcGantt, this.view = new Fe(), this.container = m.getInstance(this.jcGantt).getComponent(x.type).getMarkContainer();
+    this.type = V.type, this.jcGantt = t, this.option = clone(e), this.model = new MarkModel(e), this.model.jcGantt = this.jcGantt, this.view = new MarkView(), this.container = ComponentManager.getInstance(this.jcGantt).getComponent(TimeScale.type).getMarkContainer();
   }
   refresh() {
-    this.container || (this.container = m.getInstance(this.jcGantt).getComponent(x.type).getMarkContainer()), this.container.removeAll(), this.model.refresh(), this._uiInstance = this.view.render(this.model, null), this._uiInstance.forEach((t) => {
+    this.container || (this.container = ComponentManager.getInstance(this.jcGantt).getComponent(TimeScale.type).getMarkContainer()), this.container.removeAll(), this.model.refresh(), this._uiInstance = this.view.render(this.model, null), this._uiInstance.forEach((t) => {
       this.container.add(t);
     });
   }
@@ -1689,11 +1689,11 @@ const re = class oe {
   setTheme(t, e) {
   }
 };
-re.type = "Mark";
-let ft = re;
-const mt = class yt {
+_Mark.type = "Mark";
+let Mark = _Mark;
+const _ContextMenu = class E {
   static getInstance() {
-    return yt.instance;
+    return E.instance;
   }
   constructor() {
     this.dom = this.createContextMenu();
@@ -1701,11 +1701,11 @@ const mt = class yt {
   show(t, e, i) {
     this.dom.remove(), this.dom = null, this.dom || (this.dom = this.createContextMenu());
     let s = this;
-    i && i.length && i.forEach((a) => {
-      s.addItem(a);
+    i && i.length && i.forEach((l) => {
+      s.addItem(l);
     }), this.dom.classList.remove("hide_real");
-    let r = window.innerWidth;
-    window.innerHeight >= e + this.dom.clientHeight ? this.dom.style.top = e + "px" : this.dom.style.top = e - this.dom.clientHeight + "px", t + this.dom.clientWidth <= r ? this.dom.style.left = t + "px" : this.dom.style.left = t - this.dom.clientWidth + "px";
+    let o = window.innerWidth;
+    window.innerHeight >= e + this.dom.clientHeight ? this.dom.style.top = e + "px" : this.dom.style.top = e - this.dom.clientHeight + "px", t + this.dom.clientWidth <= o ? this.dom.style.left = t + "px" : this.dom.style.left = t - this.dom.clientWidth + "px";
   }
   hide() {
     this.dom || (this.dom = this.createContextMenu()), this.dom.classList.add("hide_real");
@@ -1729,29 +1729,29 @@ const mt = class yt {
     let e = document.createElement("div");
     e.classList.add("content-menu-item"), t.cls && e.classList.add(t.cls);
     let i = t.style ? t.style() : {};
-    for (let a in i)
-      e.style[a] = i[a];
+    for (let l in i)
+      e.style[l] = i[l];
     t.disabled && t.disabled() && e.classList.add("content-menu-item-forbid"), e.onclick = function() {
-      t.handler && t.handler(), yt.getInstance().hide();
+      t.handler && t.handler(), E.getInstance().hide();
     };
     let s = document.createElement("i");
     s.classList.add("content-menu-item-icon");
-    let r = document.createElement("img");
-    t.icon && (r.src = t.icon), s.append(r), e.append(s);
-    let o = document.createElement("span");
-    o.classList.add("content-menu-item-text"), o.innerHTML = t.text || "", e.append(o), this.dom.append(e);
+    let o = document.createElement("img");
+    t.icon && (o.src = t.icon), s.append(o), e.append(s);
+    let a = document.createElement("span");
+    a.classList.add("content-menu-item-text"), a.innerHTML = t.text || "", e.append(a), this.dom.append(e);
   }
 };
-mt.instance = new mt();
-let C = mt;
-const X = class $ {
+_ContextMenu.instance = new _ContextMenu();
+let ContextMenu = _ContextMenu;
+const _TimeScale = class S {
   constructor(t, e) {
-    this.type = $.type, this.zrInstance = t;
-    let i = d(d({}, $.defaultOption), e);
-    this.model = new xe(i), this.view = new Re(), this.container = new St(i.width, i.height), this.container.setScrollerOption(i.scroll), this.tierContainer = new Q(3), this.tierContainer.setTierName(1, $.background), this.tierContainer.setTierContainer(1, new Q(2)), this.tierContainer.setTierName(2, this.type), this.backGround = new Le(this.model.fullOption.grid, this), this.container.setComponent(this.backGround), this.coord = new He(this), this.container.__scroll.setTarget("vertical", this.tierContainer.getContainer(1)), this.initEvent(), R.getInstance().registerAction(this.container, {
+    this.type = S.type, this.zrInstance = t;
+    let i = d(d({}, S.defaultOption), e);
+    this.model = new TimeScaleModel(i), this.view = new TimeScaleView(), this.container = new FixedContainer(i.width, i.height), this.container.setScrollerOption(i.scroll), this.tierContainer = new TierContainer(3), this.tierContainer.setTierName(1, S.background), this.tierContainer.setTierContainer(1, new TierContainer(2)), this.tierContainer.setTierName(2, this.type), this.backGround = new Grid(this.model.fullOption.grid, this), this.container.setComponent(this.backGround), this.coord = new Coord(this), this.container.__scroll.setTarget("vertical", this.tierContainer.getContainer(1)), this.initEvent(), EventManager.getInstance().registerAction(this.container, {
       target: this.coord,
-      action: (s, r) => {
-        r.refresh();
+      action: (s, o) => {
+        o.refresh();
       }
     });
   }
@@ -1786,8 +1786,8 @@ const X = class $ {
     this.table = t;
   }
   isEdge(t, e) {
-    let i = this.getStartX(), s = this.getTimeLineHeight(), r = this.container.__width - 10, o = this.container.__height - s - 10;
-    return t - i <= 0 ? "left" : t - i >= r ? "right" : e - s <= 0 ? "top" : e - s >= o ? "bottom" : null;
+    let i = this.getStartX(), s = this.getTimeLineHeight(), o = this.container.__width - 10, a = this.container.__height - s - 10;
+    return t - i <= 0 ? "left" : t - i >= o ? "right" : e - s <= 0 ? "top" : e - s >= a ? "bottom" : null;
   }
   zoom(t) {
     if (t <= 0)
@@ -1805,16 +1805,16 @@ const X = class $ {
     this.model.refresh(), this.tierContainer.getContainerByName(this.type).removeAll(), this._uiInstance = this.view.render(this.model, this.zrInstance), this._uiInstance.forEach((i) => {
       t.tierContainer.addHorizonToByName(i, t.type);
     }), this.backGround && (this.backGround.setContainer(this.getBackGroundContainer()), this.backGround.refresh()), this.container.addContent(this.tierContainer), this.coord.refresh();
-    let e = m.getInstance(this.jcGantt).getComponent(ft.type);
+    let e = ComponentManager.getInstance(this.jcGantt).getComponent(Mark.type);
     e && e.refresh(), this.taskBuilder && this.taskBuilder.refresh();
   }
   setTheme(t, e) {
-    if (this.model.fullOption = S(this.model.option), t) {
-      let i = S(t), s = i.timeLine.scales;
+    if (this.model.fullOption = clone(this.model.option), t) {
+      let i = clone(t), s = i.timeLine.scales;
       delete i.timeLine.scales;
-      let r = this.model.fullOption;
-      z(i.timeLine, r, e), r.scales && r.scales.forEach((o) => {
-        z(s, o, e);
+      let o = this.model.fullOption;
+      applyTo(i.timeLine, o, e), o.scales && o.scales.forEach((a) => {
+        applyTo(s, a, e);
       });
     }
     this.model.originOption = this.model.fullOption, this.container.setScrollerOption(this.model.fullOption.scroll), this.container.__scroll.refresh(), this.backGround.setOption(this.model.fullOption.grid), this.taskBuilder.setTheme(t, e), this.refresh();
@@ -1830,13 +1830,13 @@ const X = class $ {
   initContentMenu() {
     let t = this;
     this.container.oncontextmenu = (e) => {
-      e.stop(), e.event.preventDefault(), t.model.originOption.contextmenu ? C.getInstance().show(e.event.clientX, e.event.clientY, t.model.originOption.contextmenu) : C.getInstance().hide();
+      e.stop(), e.event.preventDefault(), t.model.originOption.contextmenu ? ContextMenu.getInstance().show(e.event.clientX, e.event.clientY, t.model.originOption.contextmenu) : ContextMenu.getInstance().hide();
     };
   }
 };
-X.type = "timeScale";
-X.background = "background";
-X.defaultFormatter = {
+_TimeScale.type = "timeScale";
+_TimeScale.background = "background";
+_TimeScale.defaultFormatter = {
   second: "YY/MM/DD HH:mm:ss",
   minute: "YY/MM/DD HH:mm",
   hour: "YY/MM/DD HH时",
@@ -1845,7 +1845,7 @@ X.defaultFormatter = {
   month: "YY年MM月",
   year: "YYYY年"
 };
-X.defaultOption = {
+_TimeScale.defaultOption = {
   width: "80%",
   height: "100%",
   baseWidth: 65,
@@ -1861,8 +1861,8 @@ X.defaultOption = {
         borderColor: "#1ba784"
       },
       style: (n) => {
-        let t = u(n.start);
-        if (u().isBetween(t, u(n.end), "minute", "[]"))
+        let t = _global_moment(n.start);
+        if (_global_moment().isBetween(t, _global_moment(n.end), "minute", "[]"))
           return {
             backgroundColor: "#bacf65"
           };
@@ -1884,27 +1884,27 @@ X.defaultOption = {
     }
   }
 };
-let x = X;
-class We {
+let TimeScale = _TimeScale;
+class Row {
   constructor(t, e, i, s) {
-    this.tasks = [], this.keyId = i, this.container = new Q(2), this.data = t, this.rowBuilder = e, this.render(s);
-    let r = this, o = m.getInstance(this.rowBuilder.table.jcGantt).getComponent(Y.type);
-    this.container.onclick = (a) => {
-      a.stop(), a.event.preventDefault(), a.event.ctrlKey ? o.ctrlSelect(r) : a.event.shiftKey ? o.shiftSelect(r) : o.selectRow(r);
+    this.tasks = [], this.keyId = i, this.container = new TierContainer(2), this.data = t, this.rowBuilder = e, this.render(s);
+    let o = this, a = ComponentManager.getInstance(this.rowBuilder.table.jcGantt).getComponent(Table.type);
+    this.container.onclick = (l) => {
+      l.stop(), l.event.preventDefault(), l.event.ctrlKey ? a.ctrlSelect(o) : l.event.shiftKey ? a.shiftSelect(o) : a.selectRow(o);
     };
   }
   /* public */
   render(t) {
     let e = this.rowBuilder.colOpt, i = this, s = i.rowBuilder.rowOpt.height;
-    e.forEach((r) => {
+    e.forEach((o) => {
       i.container.addHorizonTo(
         new zrender.Text({
           silent: !0,
           style: d(d(d({
-            text: i.data[r.prop],
+            text: i.data[o.prop],
             backgroundColor: "#ffffff00",
-            width: r.width || 100,
-            x: r.width / 2 || 50,
+            width: o.width || 100,
+            x: o.width / 2 || 50,
             height: s,
             lineHeight: s,
             fontSize: 16,
@@ -1922,40 +1922,40 @@ class We {
         stroke: "#acacac",
         fill: "#fff"
       }, i.rowBuilder.rowOpt.commonStyle ? i.rowBuilder.rowOpt.commonStyle.rowStyle || {} : {}), i.rowBuilder.rowOpt.style ? i.rowBuilder.rowOpt.style(i.data).rowStyle : {}), t ? t.rowStyle : {})
-    }), 1), !t && Nt(i.rect, "style", this.rowBuilder.rowOpt.hoverStyle.rowStyle);
+    }), 1), !t && addHover(i.rect, "style", this.rowBuilder.rowOpt.hoverStyle.rowStyle);
   }
   getY() {
     return this.rowBuilder.table.rowGroup.parent.y + this.container.y;
   }
   restoreStyle() {
     let t = this.rowBuilder.rowOpt, e = t.commonStyle || {}, i = t.style, s;
-    w(i) && (s = i(this.data));
-    let r = d(d({
+    isFunction(i) && (s = i(this.data));
+    let o = d(d({
       stroke: "#acacac",
       fill: "#fff"
     }, e.rowStyle), s ? s.rowStyle : {});
-    this.rect.dirty(), this.rect.attr("style", r);
+    this.rect.dirty(), this.rect.attr("style", o);
   }
   getTasks() {
     return this.tasks;
   }
   getTaskByDate(t) {
-    let e = null, i, s, r, o = u(t);
-    for (let a = 0, h = this.tasks.length; a < h; a++)
-      if (r = this.tasks[a], i = u(r.task.start), s = u(r.task.end), o.isBetween(i, s, "second", "[]")) {
-        e = r;
+    let e = null, i, s, o, a = _global_moment(t);
+    for (let l = 0, h = this.tasks.length; l < h; l++)
+      if (o = this.tasks[l], i = _global_moment(o.task.start), s = _global_moment(o.task.end), a.isBetween(i, s, "second", "[]")) {
+        e = o;
         break;
       }
     return e;
   }
   /* private */
 }
-class je {
+class RowBuilder {
   constructor(t) {
     this.table = t;
   }
   createRow(t, e, i) {
-    return new We(t, this, e, i);
+    return new Row(t, this, e, i);
   }
   createHead() {
   }
@@ -1963,9 +1963,9 @@ class je {
     this.colOpt = t, this.rowOpt = e, this.background = i;
   }
 }
-class qe {
+class TableItem {
   constructor(t) {
-    this.rows = [], this.table = t, this.container = new Q(2), this.tableRect = new zrender.Rect({
+    this.rows = [], this.table = t, this.container = new TierContainer(2), this.tableRect = new zrender.Rect({
       shape: {
         width: t.container.__width,
         height: t.container.__height
@@ -1973,29 +1973,44 @@ class qe {
       style: d({
         fill: "none"
       }, t.option.style)
-    }), this.container.addTo(this.tableRect, 1), this.rowBuilder = new je(this.table), this.rowBuilder.init(t.option.column, t.option.row, this.tableRect), this.rows = [];
+    }), this.container.addTo(this.tableRect, 1), this.rowBuilder = new RowBuilder(this.table), this.rowBuilder.init(t.option.column, t.option.row, this.tableRect), this.rows = [];
   }
-  render() {
-    return zt(this, null, function* () {
-      let t = this, e = this.rowBuilder, i = {};
-      this.table.option.column.forEach((a) => {
-        i[a.prop] = a.name;
+  render(t) {
+    return H(this, null, function* () {
+      let e = this, i = this.rowBuilder, s = {};
+      this.table.option.column.forEach((h) => {
+        s[h.prop] = h.name;
       });
-      let r, o = this.table.option.headStyle;
-      this.table.timescale && (r = this.table.timescale.tierContainer.getContainer(2).realHeight, o.textStyle.height = r, o.textStyle.lineHeight = r), this.addRow(new zrender.Group({ silent: !0 }).add(e.createRow(i, 0, o).container)), yield this.table.getData().then((a) => {
-        let h = new zrender.Group(), l = new I(), c, f = 1;
-        a.forEach((g) => {
-          c = e.createRow(g, f++), t.rows.push(c), l.addVertical(c.container);
-        }), h.add(l), h.setClipPath(new zrender.Rect({
-          shape: {
-            x: 0,
-            y: 0,
-            width: h.getBoundingRect().width,
-            height: h.getBoundingRect().height
-          }
-        })), t.addRow(h);
-      });
+      let a, l = this.table.option.headStyle;
+      if (this.table.timescale && (a = this.table.timescale.tierContainer.getContainer(2).realHeight, l.textStyle.height = a, l.textStyle.lineHeight = a), !t && this.addRow(new zrender.Group({ silent: !0 }).add(i.createRow(s, 0, l).container)), t) {
+        let h = this.table.rows;
+        this.renderRow(h);
+      } else
+        yield this.table.getData().then((h) => {
+          e.renderRowData(h);
+        });
     });
+  }
+  renderRowData(t) {
+    let e = this, i = this.rowBuilder, s = new zrender.Group();
+    this.rowWrapper = new StackContainer();
+    let o = this.rowWrapper, a, l = 1;
+    t.forEach((h) => {
+      a = i.createRow(h, l++), e.rows.push(a), o.addVertical(a.container);
+    }), s.add(o), s.setClipPath(new zrender.Rect({
+      shape: {
+        x: 0,
+        y: 0,
+        width: s.getBoundingRect().width,
+        height: s.getBoundingRect().height
+      }
+    })), e.addRow(s);
+  }
+  renderRow(t) {
+    let e = this.rowWrapper;
+    e.removeAll(), t.forEach((i) => {
+      i.ignore || e.addVertical(i.container);
+    }), this.rows = t;
   }
   addRow(t) {
     this.container.addVerticalTo(t, 2), this.updateTableRect();
@@ -2011,49 +2026,61 @@ class qe {
     i.height = t, i.width = e, this.tableRect.attr("shape", i);
   }
 }
-const Tt = class wt {
-  constructor(t, e) {
-    this.type = wt.type, this.rows = [], this.selections = [], this.timescale = e;
-    let i = d(d({}, wt.defaultOption), t || {});
-    this.option = i, this.originOption = S(i), this.container = new St(i.width, i.height, "auto", i.scroll), this.container.setComponent(this), this.initContentMenu();
+const _Table = class __Table {
+  constructor(n, t) {
+    this.type = __Table.type, this.rows = [], this.selections = [], this.timescale = t;
+    let e = d(d({}, __Table.defaultOption), n || {});
+    this.option = e, this.originOption = clone(e), this.container = new FixedContainer(e.width, e.height, "auto", e.scroll), this.container.setComponent(this), this.initContentMenu();
   }
-  setTheme(t, e) {
-    this.option = S(this.originOption), t && z(t.table, this.option, e), this.container.setScrollerOption(this.option.scroll), this.container.__scroll.refresh(), this.taskBuilder.setTheme(t, e), this.refresh();
+  setTheme(n, t) {
+    this.option = clone(this.originOption), n && applyTo(n.table, this.option, t), this.container.setScrollerOption(this.option.scroll), this.container.__scroll.refresh(), this.taskBuilder.setTheme(n, t), this.refresh();
   }
   getCurrentData() {
-    let t = [], e;
-    return this.getRows().forEach((s) => {
-      e = s.data, e.tasks = [], s.tasks.forEach((r) => {
-        r.task.start = u(r.task.start).format("yyyy/MM/DD HH:mm:ss"), r.task.end = u(r.task.end).format("yyyy/MM/DD HH:mm:ss"), e.tasks.push(r.task);
-      }), t.push(e);
-    }), t;
+    let n = [], t;
+    return this.getRows().forEach((i) => {
+      t = i.data, t.tasks = [], i.tasks.forEach((s) => {
+        s.task.start = _global_moment(s.task.start).format("yyyy/MM/DD HH:mm:ss"), s.task.end = _global_moment(s.task.end).format("yyyy/MM/DD HH:mm:ss"), t.tasks.push(s.task);
+      }), n.push(t);
+    }), n;
   }
-  setTimeScale(t) {
-    this.timescale = t, this.timescale.setTable(this), this.container.bindScroll("vertical", t.container);
+  setTimeScale(n) {
+    this.timescale = n, this.timescale.setTable(this), this.container.bindScroll("vertical", n.container);
   }
-  refresh() {
-    console.log("table refresh");
-    let t = this, e = new qe(this);
-    e.render().then(() => {
-      t.container.__content.removeAll();
-      let i = e.container;
-      t.rows = e.rows, t.rowGroup = e.getRowGroup(), t.headGroup = e.getHeadGroup(), t.container.addContent(i), t.container.__scroll.setTarget("vertical", e.getRowGroup());
-      let s = m.getInstance(t.jcGantt).getComponent(x.type);
-      s.backGround.setTable(t), s.refresh(), t.selections = [];
+  refresh(n) {
+    let t = this;
+    !n && (this.tableItem = new TableItem(this));
+    let e = this.tableItem;
+    e.render(n).then(() => {
+      if (!n) {
+        t.container.__content.removeAll();
+        let s = e.container;
+        t.rows = e.rows, t.rowGroup = e.getRowGroup(), t.headGroup = e.getHeadGroup(), t.container.addContent(s), t.container.__scroll.setTarget("vertical", e.getRowGroup());
+      }
+      e.updateTableRect();
+      let i = ComponentManager.getInstance(t.jcGantt).getComponent(TimeScale.type);
+      i.backGround.setTable(t), i.refresh(), t.selections = [];
     });
   }
   getData() {
     if (this.option.loadData) {
-      let t = this, e = this.timescale;
-      return new Promise((i, s) => {
-        t.option.loadData(e ? e.model.start : null, e ? e.model.end : null, i);
+      let n = this, t = this.timescale;
+      return new Promise((e, i) => {
+        n.option.loadData(t ? t.model.start : null, t ? t.model.end : null, e);
       });
     } else
-      return new Promise((t, e) => {
-        t(
-          this.option.data ? S(this.option.data) : []
+      return new Promise((n, t) => {
+        n(
+          this.option.data ? clone(this.option.data) : []
         );
       });
+  }
+  /**
+   * @param filter 格式为'object.property == value'
+   */
+  filterData(filter) {
+    this.rows.forEach((r) => {
+      r.data, r.ignore = !eval(filter);
+    }), this.refresh(!0);
   }
   getRowOffsetY() {
     return this.rowGroup.y;
@@ -2064,76 +2091,76 @@ const Tt = class wt {
   getHeight() {
     return this.getHeadHeight() + this.rowGroup.getBoundingRect().height;
   }
-  getRowByPos(t) {
-    let e = null;
+  getRowByPos(n) {
+    let t = null;
     if (this.rows && this.rows.length > 0) {
-      let i, s, r;
+      let e, i, s;
       for (let o = 0; o < this.rows.length; o++)
-        if (i = this.rows[o], s = i.getY(), r = i.container.getBoundingRect().height, s <= t && t <= s + r) {
-          e = i;
+        if (e = this.rows[o], i = e.getY(), s = e.container.getBoundingRect().height, i <= n && n <= i + s) {
+          t = e;
           break;
         }
     }
-    return e;
+    return t;
   }
   clearSelections() {
-    this.selections.length && (this.selections.forEach((t) => {
-      t.restoreStyle(), t.rect.hoverForbid = !1;
+    this.selections.length && (this.selections.forEach((n) => {
+      n.restoreStyle(), n.rect.hoverForbid = !1;
     }), this.selections = []);
   }
-  removeSelection(t) {
-    t.restoreStyle(), t.rect.hoverForbid = !1, this.selections.splice(this.selections.indexOf(t), 1);
+  removeSelection(n) {
+    n.restoreStyle(), n.rect.hoverForbid = !1, this.selections.splice(this.selections.indexOf(n), 1);
   }
-  selectRow(t) {
-    t && (t.rect.hoverForbid = !0, !(this.selections.length == 1 && this.selections.indexOf(t) >= 0) && (this.clearSelections(), this.addRowToSelection(t)));
+  selectRow(n) {
+    n && (n.rect.hoverForbid = !0, !(this.selections.length == 1 && this.selections.indexOf(n) >= 0) && (this.clearSelections(), this.addRowToSelection(n)));
   }
-  ctrlSelect(t) {
+  ctrlSelect(n) {
     if (this.selections.length == 0)
-      return this.selectRow(t);
-    if (this.selections.indexOf(t) >= 0) {
-      this.removeSelection(t);
+      return this.selectRow(n);
+    if (this.selections.indexOf(n) >= 0) {
+      this.removeSelection(n);
       return;
     }
-    this.addRowToSelection(t);
+    this.addRowToSelection(n);
   }
-  shiftSelect(t) {
+  shiftSelect(n) {
     if (this.selections.length == 0)
-      return this.selectRow(t);
-    let e = this, i = this.selections[0].keyId, s = t.keyId, r = Math.max(i, s), o = Math.min(i, s);
+      return this.selectRow(n);
+    let t = this, e = this.selections[0].keyId, i = n.keyId, s = Math.max(e, i), o = Math.min(e, i);
     this.clearSelections(), this.rows.forEach((a) => {
-      a.keyId >= o && a.keyId <= r && e.addRowToSelection(a);
+      a.keyId >= o && a.keyId <= s && t.addRowToSelection(a);
     });
   }
   selectAll() {
-    this.rows.forEach((t) => {
-      this.addRowToSelection(t);
+    this.rows.forEach((n) => {
+      this.addRowToSelection(n);
     });
   }
   getSelection() {
     return this.selections;
   }
-  updateData(t) {
-    this.option.data = t, this.refresh();
+  updateData(n) {
+    this.option.data = n, this.refresh();
   }
-  setOption(t) {
+  setOption(n) {
   }
   getRows() {
     return this.rows;
   }
-  addRowToSelection(t) {
-    t.rect.hoverForbid = !0;
-    let e = this.option.row.selectStyle, i;
-    w(e) && (i = e(t.data)), t.rect.dirty(), t.rect.attr("style", i && i.rowStyle ? i.rowStyle : { fill: "#f59600" }), this.selections.push(t);
+  addRowToSelection(n) {
+    n.rect.hoverForbid = !0;
+    let t = this.option.row.selectStyle, e;
+    isFunction(t) && (e = t(n.data)), n.rect.dirty(), n.rect.attr("style", e && e.rowStyle ? e.rowStyle : { fill: "#f59600" }), this.selections.push(n);
   }
   initContentMenu() {
-    let t = this;
-    this.container.oncontextmenu = (e) => {
-      e.stop(), e.event.preventDefault(), t.originOption.contextmenu ? C.getInstance().show(e.event.clientX, e.event.clientY, t.originOption.contextmenu) : C.getInstance().hide();
+    let n = this;
+    this.container.oncontextmenu = (t) => {
+      t.stop(), t.event.preventDefault(), n.originOption.contextmenu ? ContextMenu.getInstance().show(t.event.clientX, t.event.clientY, n.originOption.contextmenu) : ContextMenu.getInstance().hide();
     };
   }
 };
-Tt.type = "table";
-Tt.defaultOption = {
+_Table.type = "table";
+_Table.defaultOption = {
   show: !0,
   width: "20%",
   height: "100%",
@@ -2213,8 +2240,8 @@ Tt.defaultOption = {
     }
   }
 };
-let Y = Tt;
-class Ve extends zrender.Rect {
+let Table = _Table;
+class VirtualRect extends zrender.Rect {
   constructor(t) {
     super(), this.source = t, this.init();
   }
@@ -2230,9 +2257,9 @@ class Ve extends zrender.Rect {
     }, this.zlevel = 999, this.style = this.source.style;
   }
 }
-const ae = class he {
+const _AxisPoint = class q {
   constructor(t) {
-    this.type = he.type, this.container = t, this.group = new zrender.Group(), this.lineX = new zrender.Line({
+    this.type = q.type, this.container = t, this.group = new zrender.Group(), this.lineX = new zrender.Line({
       shape: {
         x1: this.startX,
         y1: this.startY,
@@ -2286,8 +2313,8 @@ const ae = class he {
   setEnd(t, e) {
     this.endX = t, this.endY = e;
   }
-  show(t, e, i, s, r) {
-    let o = m.getInstance(this.jcGantt).getComponent(x.type), a = o.getOffsetX(), h = o.getOffsetY();
+  show(t, e, i, s, o) {
+    let a = ComponentManager.getInstance(this.jcGantt).getComponent(TimeScale.type), l = a.getOffsetX(), h = a.getOffsetY();
     this.group.show(), this.startX = t, this.startY = e, this.lineX.attr("shape", {
       x1: this.startX,
       y1: this.startY,
@@ -2296,18 +2323,18 @@ const ae = class he {
     }), this.lineY.attr("shape", {
       x1: this.startX,
       y1: this.startY,
-      x2: this.endX - a,
+      x2: this.endX - l,
       y2: this.startY
     }), this.tipX.attr("style", {
       x: this.startX,
       y: this.endY - h,
       text: i,
-      backgroundColor: Ot[r]
+      backgroundColor: colors[o]
     }), this.tipY.attr("style", {
-      x: this.endX - a,
+      x: this.endX - l,
       y: this.startY,
       text: s,
-      backgroundColor: Ot[r]
+      backgroundColor: colors[o]
     });
   }
   hide() {
@@ -2318,11 +2345,11 @@ const ae = class he {
   setOption(t) {
   }
 };
-ae.type = "AxisPoint";
-let N = ae;
-class $e extends zrender.Group {
-  constructor(t, e, i, s, r, o, a, h, l) {
-    super(), this.jcGantt = t, this.container = e, this.option = i, this.row = s, this.task = r, this.x = o, this.y = a, this.width = h, this.height = l, this.init(), q.init(this);
+_AxisPoint.type = "AxisPoint";
+let AxisPoint = _AxisPoint;
+class TaskItem extends zrender.Group {
+  constructor(t, e, i, s, o, a, l, h, c) {
+    super(), this.jcGantt = t, this.container = e, this.option = i, this.row = s, this.task = o, this.x = a, this.y = l, this.width = h, this.height = c, this.init(), Tooltip.init(this);
   }
   init() {
     let t = this;
@@ -2333,22 +2360,22 @@ class $e extends zrender.Group {
         width: t.width,
         height: t.height
       },
-      style: d({}, w(e.taskStyle) ? e.taskStyle(t.task, t.row.data) : {})
+      style: d({}, isFunction(e.taskStyle) ? e.taskStyle(t.task, t.row.data) : {})
     }), this.text = new zrender.Text({
       style: d({
-        text: w(e.text) ? e.text(t.task, t.row.data) : t.task.text,
+        text: isFunction(e.text) ? e.text(t.task, t.row.data) : t.task.text,
         x: t.width / 2,
         width: t.width,
         height: t.height,
         align: "center",
         lineHeight: t.height,
         overflow: "truncate"
-      }, w(e.textStyle) ? e.textStyle(t.task, t.row.data) : {})
+      }, isFunction(e.textStyle) ? e.textStyle(t.task, t.row.data) : {})
     }), this.add(this.rect), this.add(this.text), this.setPosition([t.x, t.y]), this.initEvent();
   }
   initMove() {
     let t = this;
-    this.virtualItem || (t.virtualItem = new Ve(t.rect), t.add(t.virtualItem)), this.dragLine || (t.dragLine = new zrender.Line({
+    this.virtualItem || (t.virtualItem = new VirtualRect(t.rect), t.add(t.virtualItem)), this.dragLine || (t.dragLine = new zrender.Line({
       style: {
         lineWidth: 2,
         stroke: t.rect.style.fill,
@@ -2362,63 +2389,63 @@ class $e extends zrender.Group {
     this.onmousedown = (e) => {
       if (e.event.button || e.event.ctrlKey)
         return;
-      e.stop(), e.event.preventDefault(), q.forbid(), t.mousedown = !0;
-      let i = t.width, s = t.height / 2, r = e.offsetX, o = e.offsetY, a = !1, h, l, c;
-      document.onmousemove = (f) => {
-        f.preventDefault(), this.initMove();
-        let g = t.mouseMove(f, r, o, i, s);
-        g && (h = g.row, l = g.date, r = g.x, o = g.y, a = g.success, c = g.task);
-      }, document.onmouseup = (f) => {
-        if (f.preventDefault(), !t.mousedown)
+      e.stop(), e.event.preventDefault(), Tooltip.forbid(), t.mousedown = !0;
+      let i = t.width, s = t.height / 2, o = e.offsetX, a = e.offsetY, l = !1, h, c, u;
+      document.onmousemove = (g) => {
+        g.preventDefault(), this.initMove();
+        let p = t.mouseMove(g, o, a, i, s);
+        p && (h = p.row, c = p.date, o = p.x, a = p.y, l = p.success, u = p.task);
+      }, document.onmouseup = (g) => {
+        if (g.preventDefault(), !t.mousedown)
           return;
-        m.getInstance(t.jcGantt).getComponent(N.type).hide(), t.virtualItem && t.remove(t.virtualItem), t.dragLine && t.remove(t.dragLine), t.timer && clearInterval(t.timer), t.mousedown = !1, document.onmousemove = null, document.onmouseup = null, a && t.drop(t.task, t.row, c, h, l), q.allow();
+        ComponentManager.getInstance(t.jcGantt).getComponent(AxisPoint.type).hide(), t.virtualItem && t.remove(t.virtualItem), t.dragLine && t.remove(t.dragLine), t.timer && clearInterval(t.timer), t.mousedown = !1, document.onmousemove = null, document.onmouseup = null, l && t.drop(t.task, t.row, u, h, c), Tooltip.allow();
       };
     }, this.onclick = (e) => {
       e.stop(), e.event.preventDefault(), t.dirty();
-      let i = m.getInstance(t.jcGantt).getComponent(kt.type);
+      let i = ComponentManager.getInstance(t.jcGantt).getComponent(TaskBuilder.type);
       e.event.ctrlKey ? i.ctrlSelect(t) : i.selectTask(t);
     };
   }
-  drop(t, e, i, s, r) {
-    let o = this, a = this.option.onDrag;
-    new Promise(function(h, l) {
-      w(a) ? a(t, e.data, i ? i.task : null, s ? s.data : {}, r, h) : h();
+  drop(t, e, i, s, o) {
+    let a = this, l = this.option.onDrag;
+    new Promise(function(h, c) {
+      isFunction(l) ? l(t, e.data, i ? i.task : null, s ? s.data : {}, o, h) : h();
     }).then(function() {
-      m.getInstance(o.jcGantt).getComponent(Y.type).refresh();
+      ComponentManager.getInstance(a.jcGantt).getComponent(Table.type).refresh();
     }).catch(function(h) {
       console.log(h);
     });
   }
   rePosition(t, e, i) {
-    let s = m.getInstance(this.jcGantt).getComponent(x.type).coord, r = u(this.task.end).diff(this.task.start, "second");
-    this.task.start = i, this.task.end = u(i).add(r, "second").toDate();
-    let o = s.dateToX(i), a = s.dateToX(this.task.end), h = e.container.getBoundingRect().height - 8, l = e.getY() + 4;
-    this.x = o, this.y = l, this.width = a - o, this.height = h, this.init(), t.tasks.splice(t.tasks.indexOf(this), 1), e.tasks.push(this), this.row = e;
+    let s = ComponentManager.getInstance(this.jcGantt).getComponent(TimeScale.type).coord, o = _global_moment(this.task.end).diff(this.task.start, "second");
+    this.task.start = i, this.task.end = _global_moment(i).add(o, "second").toDate();
+    let a = s.dateToX(i), l = s.dateToX(this.task.end), h = e.container.getBoundingRect().height - 8, c = e.getY() + 4;
+    this.x = a, this.y = c, this.width = l - a, this.height = h, this.init(), t.tasks.splice(t.tasks.indexOf(this), 1), e.tasks.push(this), this.row = e;
   }
-  mouseMove(t, e, i, s, r) {
-    let o = this, a, h, l;
+  mouseMove(t, e, i, s, o) {
+    let a = this, l, h, c;
     if (t.preventDefault(), !t.zrX && t.zrX != 0 || !t.zrY && t.zrY != 0)
       return;
-    let c = o.virtualItem, f = o.dragLine, g = m.getInstance(o.jcGantt), y = g.getComponent(Y.type), _ = g.getComponent(N.type), v = g.getComponent(x.type), ce = v.coord, Z = "", tt;
-    h = ce.xToDate(c.x + c.parent.x), y && y.option.row && w(y.option.row.quickTip) && (a = y.getRowByPos(c.y + c.parent.y), a && (Z = y.option.row.quickTip(a.data), l = a.getTaskByDate(h))), tt = h.toLocaleString();
-    let _t = "error", M;
-    w(o.option.allowDrag) && (M = o.option.allowDrag(o.task, o.row.data, l ? l.task : null, a ? a.data : null, h), M.allow && (_t = "success"), M.messageX && (tt = M.messageX), M.messageY && (Z = M.messageY)), c.dirty(), c.setPosition([c.x + t.offsetX - e, c.y + t.offsetY - i]), f.attr("shape", {
+    let u = a.virtualItem, g = a.dragLine, p = ComponentManager.getInstance(a.jcGantt), m = p.getComponent(Table.type), w = p.getComponent(AxisPoint.type), f = p.getComponent(TimeScale.type), $ = f.coord, M = "", x;
+    h = $.xToDate(u.x + u.parent.x), m && m.option.row && isFunction(m.option.row.quickTip) && (l = m.getRowByPos(u.y + u.parent.y), l && (M = m.option.row.quickTip(l.data), c = l.getTaskByDate(h))), x = h.toLocaleString();
+    let L = "error", _;
+    isFunction(a.option.allowDrag) && (_ = a.option.allowDrag(a.task, a.row.data, c ? c.task : null, l ? l.data : null, h), _.allow && (L = "success"), _.messageX && (x = _.messageX), _.messageY && (M = _.messageY)), u.dirty(), u.setPosition([u.x + t.offsetX - e, u.y + t.offsetY - i]), g.attr("shape", {
       x1: s,
-      y1: r,
-      x2: c.x,
-      y2: c.y
-    }), _.show(c.x + c.parent.x, c.y + c.parent.y, tt, Z, _t), e = t.offsetX, i = t.offsetY;
-    let D = v.isEdge(t.zrX, t.zrY);
-    return D ? !o.timer && (o.timer = setInterval(function() {
-      let L = 0;
-      D == "right" ? L = v.container.__scroll.moveTo("horizon", 2) : D == "left" ? L = v.container.__scroll.moveTo("horizon", -2) : D == "top" ? L = v.container.__scroll.moveTo("vertical", -2) : D == "bottom" && (L = v.container.__scroll.moveTo("vertical", 2)), o.rePosVirtualRect(D, L);
-    }, 20)) : (clearInterval(o.timer), o.timer = null), {
-      row: a,
+      y1: o,
+      x2: u.x,
+      y2: u.y
+    }), w.show(u.x + u.parent.x, u.y + u.parent.y, x, M, L), e = t.offsetX, i = t.offsetY;
+    let b = f.isEdge(t.zrX, t.zrY);
+    return b ? !a.timer && (a.timer = setInterval(function() {
+      let T = 0;
+      b == "right" ? T = f.container.__scroll.moveTo("horizon", 2) : b == "left" ? T = f.container.__scroll.moveTo("horizon", -2) : b == "top" ? T = f.container.__scroll.moveTo("vertical", -2) : b == "bottom" && (T = f.container.__scroll.moveTo("vertical", 2)), a.rePosVirtualRect(b, T);
+    }, 20)) : (clearInterval(a.timer), a.timer = null), {
+      row: l,
       date: h,
       x: e,
       y: i,
-      success: M.allow,
-      task: l
+      success: _.allow,
+      task: c
     };
   }
   rePosVirtualRect(t, e) {
@@ -2445,13 +2472,13 @@ class $e extends zrender.Group {
       x2: i.x,
       y2: i.y
     });
-    let r = m.getInstance(this.jcGantt), o = r.getComponent(Y.type), a = r.getComponent(N.type), l = r.getComponent(x.type).coord, c = "", f, g, y;
-    o && o.option.row && w(o.option.row.quickTip) && (g = o.getRowByPos(i.y + i.parent.y), g && (c = o.option.row.quickTip(g.data))), y = l.xToDate(i.x + i.parent.x), f = y.toLocaleString();
-    let _ = "error", v;
-    w(this.option.allowDrag) && (v = this.option.allowDrag(this.task, this.row.data, g ? g.getTaskByDate(y).task : null, g ? g.data : null, y), v.allow && (_ = "success"), v.messageX && (f = v.messageX), v.messageY && (c = v.messageY)), a.show(i.x + i.parent.x, i.y + i.parent.y, f, c, _);
+    let o = ComponentManager.getInstance(this.jcGantt), a = o.getComponent(Table.type), l = o.getComponent(AxisPoint.type), c = o.getComponent(TimeScale.type).coord, u = "", g, p, m;
+    a && a.option.row && isFunction(a.option.row.quickTip) && (p = a.getRowByPos(i.y + i.parent.y), p && (u = a.option.row.quickTip(p.data))), m = c.xToDate(i.x + i.parent.x), g = m.toLocaleString();
+    let w = "error", f;
+    isFunction(this.option.allowDrag) && (f = this.option.allowDrag(this.task, this.row.data, p ? p.getTaskByDate(m).task : null, p ? p.data : null, m), f.allow && (w = "success"), f.messageX && (g = f.messageX), f.messageY && (u = f.messageY)), l.show(i.x + i.parent.x, i.y + i.parent.y, g, u, w);
   }
   getTooltip() {
-    return w(this.option.tooltip) ? this.option.tooltip(this.task, this.row.data) : this.task.text;
+    return isFunction(this.option.tooltip) ? this.option.tooltip(this.task, this.row.data) : this.task.text;
   }
   select() {
     let t = this;
@@ -2473,7 +2500,7 @@ class $e extends zrender.Group {
     this.remove(this.selectRect);
   }
 }
-class Ne extends G {
+class TaskModel extends Model {
   constructor(t) {
     super(t, t), this.items = [], this.option = t;
   }
@@ -2482,13 +2509,13 @@ class Ne extends G {
       return;
     let t = this;
     this.items = [];
-    let e = this.taskBuilder.timeScale.coord, i = this.taskBuilder.table.rows, s = this.taskBuilder.timeScale.model.end, r = u(s), o;
-    i.forEach((a) => {
-      a.data.tasks && a.data.tasks.forEach((l) => {
-        if (s && u(l.start).isAfter(r))
+    let e = this.taskBuilder.timeScale.coord, i = this.taskBuilder.table.rows, s = this.taskBuilder.timeScale.model.end, o = _global_moment(s), a;
+    i.forEach((l) => {
+      l.ignore || l.data.tasks && l.data.tasks.forEach((c) => {
+        if (s && _global_moment(c.start).isAfter(o))
           return;
-        let c = e.dateToX(u(l.start).toDate()), f = e.dateToX(u(l.end).toDate()), g = a.container.getBoundingRect().height - 8, y = a.getY() + 4;
-        o = new $e(this.taskBuilder.jcGantt, t.taskBuilder.timeScale.getTaskContainer(), t.originOption, a, l, c, y, f - c, g), a.tasks.push(o), t.items.push(o);
+        let u = e.dateToX(_global_moment(c.start).toDate()), g = e.dateToX(_global_moment(c.end).toDate()), p = l.container.getBoundingRect().height - 8, m = l.getY() + 4;
+        a = new TaskItem(this.taskBuilder.jcGantt, t.taskBuilder.timeScale.getTaskContainer(), t.originOption, l, c, u, m, g - u, p), l.tasks.push(a), t.items.push(a);
       });
     });
   }
@@ -2496,19 +2523,19 @@ class Ne extends G {
     this.taskBuilder = t;
   }
 }
-class Ke {
+class TaskView {
   render(t, e) {
     return t.items;
   }
 }
-const xt = class vt {
+const _TaskBuilder = class A {
   constructor(t, e, i, s) {
-    this.type = vt.type, this.selections = [];
-    let r = d(d({}, vt.defaultOption), s);
-    this.jcGantt = t, this.timeScale = e, this.timeScale.taskBuilder = this, this.table = i, this.table.taskBuilder = this, this.container = e.getTaskContainer(), this.model = new Ne(r), this.model.setBuilder(this), this.view = new Ke(), this.aXisPoint = new N(this.container), this.aXisPoint.jcGantt = this.jcGantt, m.getInstance(this.jcGantt).componentRegister(this.aXisPoint.type, this.aXisPoint);
+    this.type = A.type, this.selections = [];
+    let o = d(d({}, A.defaultOption), s);
+    this.jcGantt = t, this.timeScale = e, this.timeScale.taskBuilder = this, this.table = i, this.table.taskBuilder = this, this.container = e.getTaskContainer(), this.model = new TaskModel(o), this.model.setBuilder(this), this.view = new TaskView(), this.aXisPoint = new AxisPoint(this.container), this.aXisPoint.jcGantt = this.jcGantt, ComponentManager.getInstance(this.jcGantt).componentRegister(this.aXisPoint.type, this.aXisPoint);
   }
   setTheme(t, e) {
-    this.model.originOption = S(this.model.option), t && z(t.task, this.model.originOption, e), this.model.fullOption = this.model.originOption, this.refresh();
+    this.model.originOption = clone(this.model.option), t && applyTo(t.task, this.model.originOption, e), this.model.fullOption = this.model.originOption, this.refresh();
   }
   refresh() {
     let t = this;
@@ -2545,8 +2572,8 @@ const xt = class vt {
     this.selections.indexOf(t) >= 0 || (t.select(), this.selections.push(t));
   }
 };
-xt.type = "TaskBuilder";
-xt.defaultOption = {
+_TaskBuilder.type = "TaskBuilder";
+_TaskBuilder.defaultOption = {
   textStyle: (n, t) => ({
     fontSize: 12,
     fontWeight: "bold"
@@ -2556,8 +2583,8 @@ xt.defaultOption = {
     stroke: "#5cb3cc"
   })
 };
-let kt = xt;
-const p = class B {
+let TaskBuilder = _TaskBuilder;
+const main = "", _Theme = class v {
   /**
    * 注册一个主题
    * @param name 主题名称
@@ -2565,17 +2592,17 @@ const p = class B {
    * @param force 如果主题名称重复，是否覆盖
    */
   static registerTheme(t, e, i) {
-    B.themeMap.has(t) && !i || B.themeMap.set(t, e);
+    v.themeMap.has(t) && !i || v.themeMap.set(t, e);
   }
   static getTheme(t) {
-    return B.themeMap.get(t);
+    return v.themeMap.get(t);
   }
   static applyTheme(t, e, i) {
-    if (E(e) && (e = B.getTheme(e)), !e)
+    if (isString(e) && (e = v.getTheme(e)), !e)
       return;
-    let s = S(e), r = s.timeLine.scales;
-    delete s.timeLine.scales, z(s, t, i), t.timeLine.scales && t.timeLine.scales.forEach((o) => {
-      z(r, o, i);
+    let s = clone(e), o = s.timeLine.scales;
+    delete s.timeLine.scales, applyTo(s, t, i), t.timeLine.scales && t.timeLine.scales.forEach((a) => {
+      applyTo(o, a, i);
     });
   }
   static quickTheme(t, e, i) {
@@ -2605,7 +2632,7 @@ const p = class B {
         }
       },
       task: {
-        taskStyle: (s, r) => ({
+        taskStyle: (s, o) => ({
           fill: e,
           stroke: i,
           shadowBlur: 3,
@@ -2655,24 +2682,24 @@ const p = class B {
     };
   }
 };
-p.冰川蜜橙 = "冰川蜜橙";
-p.青行未启 = "青行未启";
-p.稚艾霓粉 = "稚艾霓粉";
-p.西子退红 = "西子退红";
-p.秋波虎牙 = "秋波虎牙";
-p.冰河时代 = "冰河时代";
-p.紫罗兰 = "紫罗兰";
-p.橘绿之泉 = "橘绿之泉";
-p.橘子糖 = "橘子糖";
-p.玫瑰之后 = "玫瑰之后";
-p.墨尔本晴 = "墨尔本晴";
-p.themeMap = (/* @__PURE__ */ new Map()).set(p.冰川蜜橙, p.quickTheme("#84A3BC", "#FFBE90", "#E2A9A1")).set(p.稚艾霓粉, p.quickTheme("#CF929E", "#E3EB98", "#c5dc4a")).set(p.青行未启, p.quickTheme("#55bb8a", "#9eccab", "#84C08E")).set(p.西子退红, p.quickTheme("#87C0CA", "#F0CFE3", "#efb3e4")).set(p.秋波虎牙, p.quickTheme("#8ABCD1", "#E9D1B5", "#d7ad7b")).set(p.冰河时代, p.quickTheme("#2971BF", "#6EE5E3", "#CCE6D9")).set(p.紫罗兰, p.quickTheme("#9A2BD5", "#DDCDE8", "#5916AF")).set(p.橘绿之泉, p.quickTheme("#63D999", "#17bf70", "#266c56")).set(p.橘子糖, p.quickTheme("#85C8DF", "#FFE6B2", "#d7ad7b")).set(p.玫瑰之后, p.quickTheme("#F88C48", "#A7CCFF", "#E9BDBF")).set(p.墨尔本晴, p.quickTheme("#FF9F27", "#6CD1E4", "#E8DF88"));
-let Yt = p;
-const le = class K {
+_Theme.冰川蜜橙 = "冰川蜜橙";
+_Theme.青行未启 = "青行未启";
+_Theme.稚艾霓粉 = "稚艾霓粉";
+_Theme.西子退红 = "西子退红";
+_Theme.秋波虎牙 = "秋波虎牙";
+_Theme.冰河时代 = "冰河时代";
+_Theme.紫罗兰 = "紫罗兰";
+_Theme.橘绿之泉 = "橘绿之泉";
+_Theme.橘子糖 = "橘子糖";
+_Theme.玫瑰之后 = "玫瑰之后";
+_Theme.墨尔本晴 = "墨尔本晴";
+_Theme.themeMap = (/* @__PURE__ */ new Map()).set(_Theme.冰川蜜橙, _Theme.quickTheme("#84A3BC", "#FFBE90", "#E2A9A1")).set(_Theme.稚艾霓粉, _Theme.quickTheme("#CF929E", "#E3EB98", "#c5dc4a")).set(_Theme.青行未启, _Theme.quickTheme("#55bb8a", "#9eccab", "#84C08E")).set(_Theme.西子退红, _Theme.quickTheme("#87C0CA", "#F0CFE3", "#efb3e4")).set(_Theme.秋波虎牙, _Theme.quickTheme("#8ABCD1", "#E9D1B5", "#d7ad7b")).set(_Theme.冰河时代, _Theme.quickTheme("#2971BF", "#6EE5E3", "#CCE6D9")).set(_Theme.紫罗兰, _Theme.quickTheme("#9A2BD5", "#DDCDE8", "#5916AF")).set(_Theme.橘绿之泉, _Theme.quickTheme("#63D999", "#17bf70", "#266c56")).set(_Theme.橘子糖, _Theme.quickTheme("#85C8DF", "#FFE6B2", "#d7ad7b")).set(_Theme.玫瑰之后, _Theme.quickTheme("#F88C48", "#A7CCFF", "#E9BDBF")).set(_Theme.墨尔本晴, _Theme.quickTheme("#FF9F27", "#6CD1E4", "#E8DF88"));
+let Theme = _Theme;
+const _JCGantt = class C {
   /* public */
   constructor(t, e, i, s) {
-    let r = K.initMap.get(t);
-    r && (zrender.dispose(r.zrInstance), K.initMap.delete(t), window.removeEventListener("resize", r.resize), r = null), m.registerInstance(this), this._init(t, e, i, s), K.initMap.set(t, this);
+    let o = C.initMap.get(t);
+    o && (zrender.dispose(o.zrInstance), C.initMap.delete(t), window.removeEventListener("resize", o.resize), o = null), ComponentManager.registerInstance(this), this._init(t, e, i, s), C.initMap.set(t, this);
   }
   /**
    * 设置主题
@@ -2681,31 +2708,31 @@ const le = class K {
    *                      否:不会覆盖配置中的样式 是:覆盖配置中的样式
    */
   setTheme(t, e) {
-    E(t) && (t = Yt.getTheme(t)), this.table.setTheme(t, e), this.timeScale.setTheme(t, e);
+    isString(t) && (t = Theme.getTheme(t)), this.table.setTheme(t, e), this.timeScale.setTheme(t, e);
   }
   _init(t, e, i, s) {
     if (!t)
       throw new Error("The dom is required.(传入的dom不能为空)");
-    let r = e || {};
-    return this.originOption = r, Yt.applyTheme(r, i, s), t = this.resolveDom(t), this.dom = t, this.zrInstance = zrender.init(t), this.container = new St(this.zrInstance.getWidth(), this.zrInstance.getHeight(), "hidden"), this.initTimeScale(r), this.initTable(r), this.initTask(r), this.initMark(r), this.zrInstance.add(this.container), this.initResize(t), this.initApi(), this.onceRendered(), this;
+    let o = e || {};
+    return this.originOption = o, Theme.applyTheme(o, i, s), t = this.resolveDom(t), this.dom = t, this.zrInstance = zrender.init(t), this.container = new FixedContainer(this.zrInstance.getWidth(), this.zrInstance.getHeight(), "hidden"), this.initTimeScale(o), this.initTable(o), this.initTask(o), this.initMark(o), this.zrInstance.add(this.container), this.initResize(t), this.initApi(), this.onceRendered(), this;
   }
   /* private */
   resolveDom(t) {
-    if (E(t) && (t = document.getElementById(t)), !t)
+    if (isString(t) && (t = document.getElementById(t)), !t)
       throw new Error(`The element named '${t}' is not exit.(id为'${t}'的元素不存在)`);
     return t;
   }
   initTimeScale(t) {
-    this.timeScale = new x(this.zrInstance, t.timeLine), this.timeScale.jcGantt = this, this.timeScale.refresh(), this.container.addContentHorizon(this.timeScale.container), m.getInstance(this).componentRegister(this.timeScale.type, this.timeScale);
+    this.timeScale = new TimeScale(this.zrInstance, t.timeLine), this.timeScale.jcGantt = this, this.timeScale.refresh(), this.container.addContentHorizon(this.timeScale.container), ComponentManager.getInstance(this).componentRegister(this.timeScale.type, this.timeScale);
   }
   initTable(t) {
-    t.table && t.table.show === !1 || (this.table = new Y(t.table, this.timeScale), this.table.jcGantt = this, this.table && this.table.setTimeScale(this.timeScale), this.table.refresh(), this.container.addContentHorizon(this.table.container), m.getInstance(this).componentRegister(this.table.type, this.table));
+    t.table && t.table.show === !1 || (this.table = new Table(t.table, this.timeScale), this.table.jcGantt = this, this.table && this.table.setTimeScale(this.timeScale), this.table.refresh(), this.container.addContentHorizon(this.table.container), ComponentManager.getInstance(this).componentRegister(this.table.type, this.table));
   }
   initTask(t) {
-    this.taskBuilder = new kt(this, this.timeScale, this.table, t.task || {}), m.getInstance(this).componentRegister(kt.type, this.taskBuilder), this.taskBuilder.refresh();
+    this.taskBuilder = new TaskBuilder(this, this.timeScale, this.table, t.task || {}), ComponentManager.getInstance(this).componentRegister(TaskBuilder.type, this.taskBuilder), this.taskBuilder.refresh();
   }
   initMark(t) {
-    t.mark && (this.mark = new ft(this, t.mark), this.mark.refresh(), m.getInstance(this).componentRegister(ft.type, this.mark));
+    t.mark && (this.mark = new Mark(this, t.mark), this.mark.refresh(), ComponentManager.getInstance(this).componentRegister(Mark.type, this.mark));
   }
   initResize(t) {
     let e = this;
@@ -2714,18 +2741,18 @@ const le = class K {
     });
   }
   resize() {
-    let t = this.dom, e = this.zrInstance, i = this.container, s = t.clientWidth, r = t.clientHeight;
-    if (e.resize({ width: s, height: r }), i.resize(s, r), R.getInstance().publishedEvent(new j()), this.table) {
-      let o = this.table.container.getBoundingRect();
-      this.timeScale.container.setPosition([o.width, this.timeScale.container.y]);
+    let t = this.dom, e = this.zrInstance, i = this.container, s = t.clientWidth, o = t.clientHeight;
+    if (e.resize({ width: s, height: o }), i.resize(s, o), EventManager.getInstance().publishedEvent(new ResizeEvent()), this.table) {
+      let a = this.table.container.getBoundingRect();
+      this.timeScale.container.setPosition([a.width, this.timeScale.container.y]);
     }
-    R.getInstance().publishedEvent(new j());
+    EventManager.getInstance().publishedEvent(new ResizeEvent());
   }
   initListener() {
-    R.getInstance().removeListener(this.container), this.publishDefaultEvent();
+    EventManager.getInstance().removeListener(this.container), this.publishDefaultEvent();
   }
   publishDefaultEvent() {
-    R.getInstance().publishedEvent(new j());
+    EventManager.getInstance().publishedEvent(new ResizeEvent());
   }
   onceRendered() {
     if (this.initListener(), this.container.__content.eachChild((t) => {
@@ -2735,20 +2762,20 @@ const le = class K {
       this.timeScale.container.setPosition([t.width, this.timeScale.container.y]);
     }
     this.zrInstance.on("click", (t) => {
-      C.getInstance().hide();
+      ContextMenu.getInstance().hide();
     }), this.zrInstance.on("contextmenu", (t) => {
-      t.target || C.getInstance().hide();
+      t.target || ContextMenu.getInstance().hide();
     }), this.zrInstance.on("mousedown", (t) => {
-      C.getInstance().hide();
+      ContextMenu.getInstance().hide();
     });
   }
   initApi() {
-    this.tableApi = new Je(this.table), this.timeScaleApi = new Ue(this.timeScale), this.taskApi = new Qe(this.taskBuilder);
+    this.tableApi = new TableApi(this.table), this.timeScaleApi = new TimeScaleApi(this.timeScale), this.taskApi = new TaskApi(this.taskBuilder);
   }
 };
-le.initMap = /* @__PURE__ */ new Map();
-let ti = le;
-class Je {
+_JCGantt.initMap = /* @__PURE__ */ new Map();
+let JCGantt = _JCGantt;
+class TableApi {
   constructor(t) {
     this.table = t;
   }
@@ -2792,8 +2819,15 @@ class Je {
     let i = new Blob([JSON.stringify(t, void 0, 4)], { type: "text/json" });
     e.href = URL.createObjectURL(i), document.body.appendChild(e), e.click(), document.body.removeChild(e);
   }
+  /**
+   * 数据过滤，仅从缓存中过滤数据，不会重新加载数据
+   * @param filter
+   */
+  filter(t) {
+    this.table.filterData(t);
+  }
 }
-class Ue {
+class TimeScaleApi {
   constructor(t) {
     this.timeScale = t;
   }
@@ -2842,7 +2876,7 @@ class Ue {
     this.timeScale.setTimeUnit(t, e);
   }
 }
-class Qe {
+class TaskApi {
   constructor(t) {
     this.taskBuilder = t;
   }
@@ -2860,5 +2894,5 @@ class Qe {
   }
 }
 export {
-  ti as default
+  JCGantt as default
 };
